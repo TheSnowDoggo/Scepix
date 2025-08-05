@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using System.Collections;
 using System.Collections.Generic;
+using Scepix.Types;
 
 namespace Scepix.Collections;
 
@@ -27,6 +28,8 @@ public class Grid2D<T> : IEnumerable<T>,
     public static explicit operator T[,](Grid2D<T> grid) => grid._data;
     
     public static explicit operator Grid2D<T>(T[,] data) => new Grid2D<T>(data);
+
+    public static implicit operator Grid2DView<T>(Grid2D<T> grid) => grid.ToView();
     
     /// <summary>
     /// Gets the width of the grid.
@@ -44,14 +47,40 @@ public class Grid2D<T> : IEnumerable<T>,
     public int Size => _data.Length;
 
     /// <summary>
-    /// Gets or sets the item at the given position.
+    /// Gets or sets an item from the given coordinate.
     /// </summary>
     /// <param name="x">The x-coordinate.</param>
     /// <param name="y">The y-coordinate.</param>
     public T this[int x, int y]
     {
-        get => _data[x, y];
-        set => _data[x, y] = value; 
+        get
+        {
+            if (!CoordinatesValid(x, y))
+            {
+                throw new ArgumentException($"{x},{y} is not a valid coordinate");
+            }
+            
+            return _data[x, y];
+        }
+        set
+        {
+            if (!CoordinatesValid(x, y))
+            {
+                throw new  ArgumentException($"{x},{y} is not a valid coordinate");
+            }
+            
+            _data[x, y] = value; 
+        }
+    }
+    
+    /// <summary>
+    /// Gets or sets an item from the given coordinate.
+    /// </summary>
+    /// <param name="coordinate">The coordinate.</param>
+    public T this[Vec2I coordinate]
+    {
+        get => this[coordinate.X, coordinate.Y];
+        set => this[coordinate.X, coordinate.Y] = value; 
     }
 
     /// <summary>
@@ -78,6 +107,70 @@ public class Grid2D<T> : IEnumerable<T>,
         Array.Clear(_data);
     }
 
+    /// <summary>
+    /// Returns a readonly view of the grid.
+    /// </summary>
+    /// <returns>A readonly view of the grid.</returns>
+    public Grid2DView<T> ToView()
+    {
+        return new Grid2DView<T>(this);
+    }
+
+    public IEnumerable<Vec2I> EnumerateRect(int x, int y, int width, int height, bool rowMajor = true)
+    {
+        var s1 = rowMajor ? x : y;
+        var s2 = rowMajor ? y : x;
+        
+        var e1 = s1 + (rowMajor ? width : height);
+        var e2 = s2 + (rowMajor ? height : width);
+
+        for (var i = s1; i < e1; ++i)
+        {
+            for (var j = s2; j < e2; ++j)
+            {
+                yield return rowMajor ? new Vec2I(i, j) : new Vec2I(j, i);
+            }
+        }
+    }
+    
+    public IEnumerable<Vec2I> EnumerateRect(int width, int height, bool rowMajor = true)
+    {
+        return EnumerateRect(0, 0, width, height, rowMajor);
+    }
+
+    public IEnumerable<Vec2I> Enumerate(bool rowMajor = true)
+    {
+        return EnumerateRect(Width, Height, rowMajor);
+    }
+
+    public void Fill(Func<Vec2I, T> fill, int x, int y, int width, int height)
+    {
+        foreach (var pos in EnumerateRect(x, y, width, height))
+        {
+            this[pos] = fill(pos);
+        }
+    }
+    
+    public void Fill(T value, int x, int y, int width, int height)
+    {
+        foreach (var pos in EnumerateRect(x, y, width, height))
+        {
+            this[pos] = value;
+        }
+    }
+
+    /// <summary>
+    /// Fills the grid with the given value.
+    /// </summary>
+    /// <param name="value">The value to fill.</param>
+    public void Fill(T value)
+    {
+        foreach (var pos in Enumerate())
+        {
+            this[pos] = value;
+        }
+    }
+    
     public object Clone()
     {
         return new Grid2D<T>(_data);
@@ -110,5 +203,10 @@ public class Grid2D<T> : IEnumerable<T>,
         
         sb.Append(" } ]");
         return sb.ToString();
+    }
+
+    private bool CoordinatesValid(int x, int y)
+    {
+        return x >= 0 && y >= 0 && x < Width && y < Height;
     }
 }

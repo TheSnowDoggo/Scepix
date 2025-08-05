@@ -15,6 +15,6 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <Image Source="{Binding Bitmap}" RenderOptions.BitmapInterpolationMode="None"></Image>
+    <Image Source="{Binding PixelViewModel.Bitmap}" RenderOptions.BitmapInterpolationMode="None"></Image>
 
 </Window>
