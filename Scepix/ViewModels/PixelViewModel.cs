@@ -10,7 +10,7 @@ public class PixelViewModel : ViewModelBase
 {
     private readonly PixelManager _manager;
 
-    private readonly SKBitmap _skBitmap = CreateBitmap(64, 64, SKColors.Aqua);
+    private readonly SKBitmap _skBitmap = CreateBitmap(64, 64, SKColors.Black);
 
     public PixelViewModel(PixelManager manager)
     {
@@ -29,14 +29,14 @@ public class PixelViewModel : ViewModelBase
 
         using var canvas = new SKCanvas(_skBitmap);
         foreach (var pos in _manager.Grid.Enumerate())
-        {
+        { 
             var pixelData = _manager.Grid[pos];
-            
-            paint.Color = pixelData.Variant.Color;
-            
+
+            paint.Color = pixelData == null ? SKColors.Black : pixelData.Variant.Color;
+
             canvas.DrawPoint(pos.X, pos.Y, paint);
         }
-        
+
         OnPropertyChanged(nameof(Bitmap));
     }
 

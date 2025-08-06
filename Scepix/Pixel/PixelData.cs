@@ -1,6 +1,8 @@
+using Scepix.Types;
+
 namespace Scepix.Pixel;
 
 public class PixelData
 {
-    public PixelVariant Variant { get; set; } = PixelVariant.Empty;
+    public required PixelVariant Variant { get; init; }
 }

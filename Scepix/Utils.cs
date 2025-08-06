@@ -1,0 +1,52 @@
+using System.Text;
+using System.Collections.Generic;
+
+namespace Scepix;
+
+public static class Utils
+{
+    public static T As<T>(this object obj)
+    {
+        return (T)obj;
+    }
+    
+    public static T[] Copy<T>(T item, int copies)
+    {
+        var arr = new T[copies];
+        for (var i = 0; i < copies; ++i)
+        {
+            arr[i] = item;
+        }
+        return arr;
+    }
+
+    public static string ToPretty<TKey, TResult>(this Dictionary<TKey, TResult> dict)
+        where TKey : notnull
+    {
+        if (dict.Count == 0)
+        {
+            return "[]";
+        }
+        
+        var sb = new StringBuilder("[ ");
+
+        var first = true;
+        foreach (var pair in dict)
+        {
+            if (!first)
+            {
+                sb.Append(", ");
+            }
+            else
+            {
+                first = false;
+            }
+
+            sb.Append($"{{ {pair.Key}, {pair.Value} }}");
+        }
+
+        sb.Append(" ]");
+
+        return sb.ToString();
+    }
+}

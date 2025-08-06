@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using CommunityToolkit.Mvvm.ComponentModel;
+using System.Linq;
 using Scepix.Collections;
 using Scepix.Update;
 using Scepix.Pixel;
 using Scepix.Types;
 using SkiaSharp;
-using Tmds.DBus.Protocol;
 
 namespace Scepix.Models;
 
@@ -15,57 +14,62 @@ public class PixelManager
 {
     private readonly Updater _updater = new();
 
-    private readonly Grid2D<PixelData> _grid = new(64, 64);
+    private readonly Grid2D<PixelData?> _grid = new(64, 64);
 
     private readonly Dictionary<string, PixelVariant> _variants = new()
     {
-        { "sky", new PixelVariant() { Color = SKColors.Cyan } },
-        { "rock", new PixelVariant() { Color = SKColors.Gray } },
+        { "sand", new PixelVariant() { Color = SKColors.Yellow, Tags = new TagSet() { "powder", "rust" } } },
+        { "gravel", new PixelVariant() { Color = SKColors.Gray, Tags = new TagSet() { "powder" } } },
+        { "steel", new PixelVariant() { Color = SKColors.DarkGray, Tags = new TagSet() { "rust" } } },
     };
 
-    private double moveTimer = 0.0;
+    private readonly TagEngineManager _tagEngineManager = new()
+    {
+        new PowderEngine()
+    };
 
-    private Vec2I pos = Vec2I.Zero;
-    
     public PixelManager()
     {
         Start();
     }
     
-    public Grid2DView<PixelData> Grid => _grid;
+    public Grid2DView<PixelData?> Grid => _grid;
 
     public event EventHandler Render;
 
     public void Start()
     {
-        _grid.Fill(new PixelData() { Variant = _variants["sky"] });
+        _grid.Fill(p => new PixelData()
+        {
+            Variant = _variants["sand"],
+        }, 0, 0, 10, 10);
         
+        _grid.Fill(p => new PixelData()
+        {
+            Variant = _variants["gravel"],
+        }, 8, 17, 10, 10);
+
         _updater.OnUpdate += Update;
 
-        _updater.FrameCap = 60;
+        _updater.FrameCap = 20;
         
         _updater.Start();
     }
 
     private void Update(double delta)
     {
-        Debug.WriteLine($"delta: {delta} FPS: {_updater.FPS}");
-        
-        if (moveTimer >= 0)
+        try
         {
-            moveTimer -= delta;
+            Debug.WriteLine($"delta: {delta} FPS: {_updater.FPS}");
+
+            _tagEngineManager.Update(delta, _grid);
+       
+            Render?.Invoke(this, EventArgs.Empty);
         }
-        else
+        catch (Exception e)
         {
-            _grid[pos] = new PixelData() { Variant = _variants["sky"] };
-            
-            pos += Vec2I.Right;
-            
-            _grid[pos] = new PixelData() { Variant = _variants["rock"] };
-            
-            moveTimer = 1;
+            Debug.WriteLine(e);
+            throw;
         }
-        
-        Render?.Invoke(this, EventArgs.Empty);
     }
 }

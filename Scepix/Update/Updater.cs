@@ -44,7 +44,7 @@ public class Updater
     /// <remarks>
     /// By default -1 representing uncapped.
     /// </remarks>
-    public int FrameCap { get; set; } = -1;
+    public double FrameCap { get; set; } = -1;
 
     private double DeltaCap => 1.0 / FrameCap;
 
