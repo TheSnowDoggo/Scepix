@@ -20,7 +20,7 @@ public class PixelManager
         { "sand", new PixelVariant() { Color = SKColors.Yellow, Tags = new TagSet() { "powder" }, } },
         { "gravel", new PixelVariant() { Color = SKColors.Gray, Tags = new TagSet() { "powder" } } },
         { "water", new PixelVariant() { Color = SKColors.RoyalBlue, Tags = new TagSet() { "liquid" } }},
-        { "oil", new PixelVariant() { Color = SKColors.DarkSlateGray, Tags = new TagSet() { "liquid" } }}
+        { "oil", new PixelVariant() { Color = SKColors.DarkSlateGray, Tags = new TagSet() { "liquid", { "liquid.density", 3 } } }}
     };
 
     private readonly TagEngineManager _tagEngineManager =
@@ -45,11 +45,11 @@ public class PixelManager
 
     private void Start()
     {
-        _grid.Fill(p => new PixelData(_variants["sand"]), 30, 50, 10, 20);
+        //_grid.Fill(p => new PixelData(_variants["sand"]), 30, 50, 10, 20);
         
-        _grid.Fill(p => new PixelData(_variants["water"]), 0, 0, 100, 30);
+        _grid.Fill(p => new PixelData(_variants["water"]), 30, 0, 60, 30);
         
-        _grid.Fill(p => new PixelData(_variants["oil"]), 180, 30, 40, 60);
+        _grid.Fill(p => new PixelData(_variants["oil"]), 0, 40, 180, 60);
         
         //_grid.Fill(p => new PixelData(_variants["water"]), 0, 70, 50, 50);
         _updater.OnUpdate += Update;

@@ -13,10 +13,13 @@ public class LiquidEngine : TagEngine
 
     private readonly string _heading;
 
+    private readonly string _density;
+
     public LiquidEngine()
         : base("liquid")
     {
         _heading = $"{Tag}.heading";
+        _density = $"{Tag}.density";
     }
 
     public override void Update(double delta, IReadOnlyList<Vec2I> positions, VirtualGrid2D<PixelData?> grid)
@@ -28,22 +31,26 @@ public class LiquidEngine : TagEngine
                 continue;
             }
 
-            if (grid[pos + Vec2I.Down] == null)
+            var density = data.Variant.Tags.GetContentOrDefault<int>(_density);
+
+            if (Valid(pos + Vec2I.Down))
             {
                 grid.Swap(pos, pos + Vec2I.Down);
                 data.LocalTags.Remove(_heading);
             }
             else
             {
-                if (!data.LocalTags.TryGetContent(_heading, out Vec2I heading) || !grid.TryGet(pos + heading, out var p) || p != null)
+                if (!data.LocalTags.TryGetContent(_heading, out bool hDir) || !Valid(pos + Heading(hDir)))
                 {
-                    heading = _rand.Next(2) == 0 ? Vec2I.Left : Vec2I.Right;
-                    data.LocalTags[_heading] = heading;
+                    hDir = _rand.NextBool();
+                    data.LocalTags[string.Intern(_heading)] = hDir;
                 }
+
+                var heading = Heading(hDir);
 
                 var next = pos + heading;
                 
-                if (!grid.TryGet(next, out p) || p != null)
+                if (!Valid(next))
                 {
                     continue;
                 }
@@ -53,18 +60,32 @@ public class LiquidEngine : TagEngine
                 {
                     var move = next + Vec2I.Down + heading * i;
                     
-                    if (grid.TryGet(move, out p) && p == null)
+                    if (!Valid(move))
                     {
-                        grid.Swap(pos, move);
-                        moved = true;
-                        break;
+                        continue;
                     }
+                    
+                    grid.Swap(pos, move);
+                    moved = true;
+                    break;
                 }
                 
                 if (!moved)
                 {
                     grid.Swap(pos, next);
                 } 
+            }
+
+            continue;
+
+            bool Valid(Vec2I t)
+            {
+                return grid.TryGet(t, out var p) && (p == null || (p.Variant != data.Variant && p.Variant.Tags.HasTag(Tag) && p.Variant.Tags.GetContentOrDefault<int>(_density) < density));
+            }
+
+            Vec2I Heading(bool heading)
+            {
+                return heading ? Vec2I.Left : Vec2I.Right;
             }
         }
     }

@@ -180,6 +180,16 @@ public static class Utils
         return a == b;
     }
 
+    /// <summary>
+    /// Returns either true or false.
+    /// </summary>
+    /// <param name="source">The source Random.</param>
+    /// <returns>true or false.</returns>
+    public static bool NextBool(this Random source)
+    {
+        return source.Next(2) == 0;
+    }
+
     #endregion
     
     #region Copy

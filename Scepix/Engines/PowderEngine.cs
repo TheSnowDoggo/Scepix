@@ -56,7 +56,7 @@ public class PowderEngine : TagEngine
                         
                         left = routing switch
                         {
-                            "rand" => _rand.Next(2) == 0,
+                            "rand" => _rand.NextBool(),
                             "left" => true,
                             "right" => false,
                             _ => throw new NotImplementedException("Undefined routing mode.")
