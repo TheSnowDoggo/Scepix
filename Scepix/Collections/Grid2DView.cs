@@ -35,7 +35,7 @@ public class Grid2DView<T>(Grid2D<T> _grid) : IEnumerable<T>,
     public T this[Vec2I coordinate] => _grid[coordinate];
 
     /// <inheritdoc cref="Grid2D{T}.Enumerate(bool)"/>
-    public IEnumerable<Vec2I> Enumerate(bool rowMajor = true) => _grid.Enumerate(rowMajor);
+    public IEnumerable<Vec2I> Enumerate(bool rowMajor = false) => _grid.Enumerate(rowMajor);
 
     /// <inheritdoc cref="Grid2D{T}.Clone"/>
     public object Clone() => _grid.Clone();

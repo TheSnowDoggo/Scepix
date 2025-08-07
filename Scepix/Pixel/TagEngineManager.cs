@@ -29,9 +29,9 @@ public class TagEngineManager : IEnumerable<TagEngine>
         }
     }
     
-    private Dictionary<string, List<Vec2I>> QueryTagInfo(Grid2D<PixelData?> grid)
+    private static Dictionary<string, List<Vec2I>> QueryTagInfo(Grid2D<PixelData?> grid)
     {
-        var dict = new Dictionary<string, List<Vec2I>> ();
+        var dict = new Dictionary<string, List<Vec2I>>();
         
         foreach (var pos in grid.Enumerate())
         {

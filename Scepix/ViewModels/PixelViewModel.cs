@@ -10,7 +10,7 @@ public class PixelViewModel : ViewModelBase
 {
     private readonly PixelManager _manager;
 
-    private readonly SKBitmap _skBitmap = CreateBitmap(64, 64, SKColors.Black);
+    private SKBitmap _skBitmap =  CreateBitmap(64, 64, SKColors.Black);
 
     public PixelViewModel(PixelManager manager)
     {
@@ -22,6 +22,12 @@ public class PixelViewModel : ViewModelBase
 
     private void Manager_OnRender(object? sender, EventArgs e)
     {
+        if (_skBitmap.Width != _manager.Grid.Width || 
+            _skBitmap.Height != _manager.Grid.Height)
+        {
+            _skBitmap = CreateBitmap(_manager.Grid.Width, _manager.Grid.Height, SKColors.Black);
+        }
+        
         var paint = new SKPaint()
         {
             IsAntialias = false,

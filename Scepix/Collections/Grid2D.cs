@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Scepix.Types;
 
 namespace Scepix.Collections;
@@ -55,7 +56,7 @@ public class Grid2D<T> : IEnumerable<T>,
     {
         get
         {
-            if (!CoordinatesValid(x, y))
+            if (!InRange(x, y))
             {
                 throw new ArgumentException($"{x},{y} is not a valid coordinate");
             }
@@ -64,7 +65,7 @@ public class Grid2D<T> : IEnumerable<T>,
         }
         set
         {
-            if (!CoordinatesValid(x, y))
+            if (!InRange(x, y))
             {
                 throw new  ArgumentException($"{x},{y} is not a valid coordinate");
             }
@@ -81,6 +82,57 @@ public class Grid2D<T> : IEnumerable<T>,
     {
         get => this[coordinate.X, coordinate.Y];
         set => this[coordinate.X, coordinate.Y] = value; 
+    }
+    
+    /// <summary>
+    /// Determines whether the given coordinates are contained within the grid.
+    /// </summary>
+    /// <param name="x">The x-coordinate.</param>
+    /// <param name="y">The y-coordinate.</param>
+    /// <returns>true if the given coordinates are in range; otherwise, false</returns>
+    public bool InRange(int x, int y)
+    {
+        return x >= 0 && y >= 0 && x < Width && y < Height;
+    }
+    
+    /// <summary>
+    /// Determines whether the given coordinate is contained within the grid.
+    /// </summary>
+    /// <param name="pos">The coordinate.</param>
+    /// <returns>true if the given coordinates are in range; otherwise, false</returns>
+    public bool InRange(Vec2I pos)
+    {
+        return InRange(pos.X, pos.Y);
+    }
+
+    /// <summary>
+    /// Gets the item at the given coordinates.
+    /// </summary>
+    /// <param name="x">The x-coordinate.</param>
+    /// <param name="y">The y-coordinate.</param>
+    /// <param name="value">The item at the coordinate or default if coordinates are invalid.</param>
+    /// <returns>true if the given coordinates are valid; otherwise, false</returns>
+    public bool TryGet(int x, int y, [MaybeNullWhen(false)] out T value)
+    {
+        if (!InRange(x, y))
+        {
+            value = default;
+            return false;
+        }
+
+        value = this[x, y];
+        return true;
+    }
+    
+    /// <summary>
+    /// Gets the item at the given coordinate.
+    /// </summary>
+    /// <param name="pos">The coordinates.</param>
+    /// <param name="value">The item at the coordinate or default if coordinates are invalid.</param>
+    /// <returns>true if the given coordinates are valid; otherwise, false</returns>
+    public bool TryGet(Vec2I pos, [MaybeNullWhen(false)] out T value)
+    {
+        return TryGet(pos.X, pos.Y, out value);
     }
 
     /// <summary>
@@ -116,7 +168,7 @@ public class Grid2D<T> : IEnumerable<T>,
         return new Grid2DView<T>(this);
     }
 
-    public IEnumerable<Vec2I> EnumerateRect(int x, int y, int width, int height, bool rowMajor = true)
+    public IEnumerable<Vec2I> EnumerateRect(int x, int y, int width, int height, bool rowMajor = false)
     {
         var s1 = rowMajor ? x : y;
         var s2 = rowMajor ? y : x;
@@ -133,12 +185,12 @@ public class Grid2D<T> : IEnumerable<T>,
         }
     }
     
-    public IEnumerable<Vec2I> EnumerateRect(int width, int height, bool rowMajor = true)
+    public IEnumerable<Vec2I> EnumerateRect(int width, int height, bool rowMajor = false)
     {
         return EnumerateRect(0, 0, width, height, rowMajor);
     }
 
-    public IEnumerable<Vec2I> Enumerate(bool rowMajor = true)
+    public IEnumerable<Vec2I> Enumerate(bool rowMajor = false)
     {
         return EnumerateRect(Width, Height, rowMajor);
     }
@@ -203,10 +255,5 @@ public class Grid2D<T> : IEnumerable<T>,
         
         sb.Append(" } ]");
         return sb.ToString();
-    }
-
-    private bool CoordinatesValid(int x, int y)
-    {
-        return x >= 0 && y >= 0 && x < Width && y < Height;
     }
 }

@@ -1,5 +1,7 @@
 using System.Text;
 using System.Collections.Generic;
+using Scepix.Collections;
+using Scepix.Types;
 
 namespace Scepix;
 
@@ -48,5 +50,10 @@ public static class Utils
         sb.Append(" ]");
 
         return sb.ToString();
+    }
+
+    public static void Swap<T>(this Grid2D<T> grid, Vec2I p1, Vec2I p2)
+    {
+        (grid[p1], grid[p2]) = (grid[p2], grid[p1]);
     }
 }

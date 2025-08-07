@@ -4,5 +4,12 @@ namespace Scepix.Pixel;
 
 public class PixelData
 {
-    public required PixelVariant Variant { get; init; }
+    public PixelData(PixelVariant variant)
+    {
+        Variant = variant;
+    }
+    
+    public PixelVariant Variant { get; }
+
+    public TagSet LocalTags { get; } = new();
 }

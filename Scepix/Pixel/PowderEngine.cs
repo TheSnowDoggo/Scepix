@@ -16,27 +16,22 @@ public class PowderEngine : TagEngine
     {
         foreach (var pos in positions.AsEnumerable().Reverse())
         {
-            var data = grid[pos];
-            
-            if (pos.Y == grid.Height - 1 || data == null)
+            if (pos.Y == grid.Height - 1 || grid[pos] == null)
             {
                 continue;
             }
 
-            if (grid[pos.X, pos.Y + 1] == null)
+            if (grid[pos + Vec2I.Down] == null)
             {
-                grid[pos] = null;
-                grid[pos + Vec2I.Down] = data;
+                grid.Swap(pos, pos + Vec2I.Down);
             }
-            else if (pos.X > 0 && grid[pos.X - 1, pos.Y + 1] == null)
+            else if (grid.TryGet(pos + Vec2I.DownLeft, out var p) && p == null)
             {
-                grid[pos] = null;
-                grid[pos + Vec2I.DownLeft] = data;
+                grid.Swap(pos, pos + Vec2I.DownLeft);
             }
-            else if (pos.X < grid.Width - 1 && grid[pos.X + 1, pos.Y + 1] == null)
+            else if (grid.TryGet(pos + Vec2I.DownRight, out p) && p == null)
             {
-                grid[pos] = null;
-                grid[pos + Vec2I.DownRight] = data;
+                grid.Swap(pos, pos + Vec2I.DownRight);
             }
         }
     }
