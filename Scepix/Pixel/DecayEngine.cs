@@ -14,7 +14,7 @@ public class DecayEngine : TagEngine
     {
     }
     
-    public override void Update(double delta, List<Vec2I> positions, Grid2D<PixelData?> grid)
+    public override void Update(double delta, IReadOnlyList<Vec2I> positions, VirtualGrid2D<PixelData?> grid)
     {
         foreach (var pos in positions)
         {

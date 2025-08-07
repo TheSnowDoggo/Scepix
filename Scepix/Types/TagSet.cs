@@ -84,7 +84,7 @@ public class TagSet : IEnumerable<KeyValuePair<string, object?>>,
     /// </summary>
     /// <param name="tag">The name of the tag to look for.</param>
     /// <returns>true if this contains the specified tag; otherwise, false</returns>
-    public bool ContainsTag(string tag)
+    public bool HasTag(string tag)
     {
         return _tags.ContainsKey(tag);
     }

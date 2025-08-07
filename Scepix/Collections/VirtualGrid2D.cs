@@ -1,73 +1,52 @@
 using System;
-using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Scepix.Types;
 
 namespace Scepix.Collections;
 
 /// <summary>
-/// Represents a 2D grid.
+/// A class representing a virtual grid that only allocates memory for stored positions.
 /// </summary>
-/// <typeparam name="T">The type to store.</typeparam>
-public class Grid2D<T> : IReadOnlyGrid<T>
+public class VirtualGrid2D<T> : IReadOnlyGrid<T>
 {
-    private T[,] _data;
+    private readonly Dictionary<Vec2I, T> _data = new();
 
-    public Grid2D(int width, int height)
+    public VirtualGrid2D(int width, int height)
     {
-        _data = new T[width, height];
+        Width = width;
+        Height = height;
     }
     
-    public Grid2D(T[,] data)
+    public VirtualGrid2D(int width, int height, IEnumerable<KeyValuePair<Vec2I, T>> collection)
+        : this(width, height)
     {
-        _data = data;
+        _data = new Dictionary<Vec2I, T>(collection);
     }
     
-    public static explicit operator T[,](Grid2D<T> grid) => grid._data;
+    public int Width { get; }
     
-    public static explicit operator Grid2D<T>(T[,] data) => new Grid2D<T>(data);
+    public int Height { get; }
+    
+    public int Count => _data.Count;
 
-    public static implicit operator GridView<T>(Grid2D<T> grid) => grid.ToView();
-    
-    /// <summary>
-    /// Gets the width of the grid.
-    /// </summary>
-    public int Width => _data.GetLength(0);
-    
-    /// <summary>
-    /// Gets the height of the grid.
-    /// </summary>
-    public int Height => _data.GetLength(1);
-
-    /// <summary>
-    /// Gets the size of the grid.
-    /// </summary>
-    public int Size => _data.Length;
-
-    /// <summary>
-    /// Gets or sets an item from the given coordinate.
-    /// </summary>
-    /// <param name="x">The x-coordinate.</param>
-    /// <param name="y">The y-coordinate.</param>
-    public T this[int x, int y]
-    {
-        get => InRange(x, y) ? _data[x, y] : 
-            throw new ArgumentException($"{x},{y} is not a valid coordinate");
-        set => _data[x, y] = InRange(x, y) ? value : 
-            throw new  ArgumentException($"{x},{y} is not a valid coordinate");
-    }
-    
-    /// <summary>
-    /// Gets or sets an item from the given coordinate.
-    /// </summary>
-    /// <param name="coordinate">The coordinate.</param>
     public T this[Vec2I coordinate]
     {
-        get => this[coordinate.X, coordinate.Y];
-        set => this[coordinate.X, coordinate.Y] = value; 
+        get => (InRange(coordinate) ? _data.GetValueOrDefault(coordinate) : 
+            throw new ArgumentException($"{coordinate} is not a valid coordinate"))!;
+        set => _data[coordinate] = InRange(coordinate) ? value : 
+            throw new ArgumentException($"{coordinate} is not a valid coordinate");
     }
+
+    public T this[int x, int y]
+    {
+        get => this[new Vec2I(x, y)];
+        set => this[new Vec2I(x, y)] = value;
+    }
+    
+    public static implicit operator GridView<T>(VirtualGrid2D<T> grid) => grid.ToView();
     
     /// <summary>
     /// Determines whether the given coordinates are contained within the grid.
@@ -89,7 +68,7 @@ public class Grid2D<T> : IReadOnlyGrid<T>
     {
         return InRange(pos.X, pos.Y);
     }
-
+    
     /// <summary>
     /// Gets the item at the given coordinates.
     /// </summary>
@@ -119,31 +98,7 @@ public class Grid2D<T> : IReadOnlyGrid<T>
     {
         return TryGet(pos.X, pos.Y, out value);
     }
-
-    /// <summary>
-    /// Resizes the grid to the given dimensions removing all previous data.
-    /// </summary>
-    /// <param name="width">The new width.</param>
-    /// <param name="height">The new height.</param>
-    /// <exception cref="ArgumentException">Thrown if the width or height is negative.</exception>
-    public void CleanResize(int width, int height)
-    {
-        if (width < 0 || height < 0)
-        {
-            throw new ArgumentException("Width and Height cannot be negative.");
-        }
-        
-        _data = new T[width, height];
-    }
-
-    /// <summary>
-    /// Clears the grid.
-    /// </summary>
-    public void Clear()
-    {
-        Array.Clear(_data);
-    }
-
+    
     /// <summary>
     /// Returns a readonly view of the grid.
     /// </summary>
@@ -152,12 +107,9 @@ public class Grid2D<T> : IReadOnlyGrid<T>
     {
         return new GridView<T>(this);
     }
-    
-    public IEnumerable<Vec2I> Enumerate(bool rowMajor = false)
-    {
-        return Utils.EnumerateRect(Width, Height, rowMajor);
-    }
 
+    public IEnumerable<Vec2I> EnumerateFilled() => from pos in _data.Keys select pos;
+    
     public void Fill(Func<Vec2I, T> fill, int x, int y, int width, int height)
     {
         foreach (var pos in Utils.EnumerateRect(x, y, width, height))
@@ -180,18 +132,12 @@ public class Grid2D<T> : IReadOnlyGrid<T>
     /// <param name="value">The value to fill.</param>
     public void Fill(T value)
     {
-        foreach (var pos in Enumerate())
-        {
-            this[pos] = value;
-        }
+        Fill(value, 0, 0, Width, Height);
     }
     
-    public object Clone()
-    {
-        return new Grid2D<T>(_data);
-    }
+    public object Clone() =>  new VirtualGrid2D<T>(Width, Height, _data);
 
-    public IEnumerator<T> GetEnumerator() => (IEnumerator<T>)_data.GetEnumerator();
-    
+    public IEnumerator<T> GetEnumerator() => (from item in _data.Values select item).GetEnumerator();
+
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

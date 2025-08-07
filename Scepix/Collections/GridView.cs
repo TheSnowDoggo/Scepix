@@ -9,40 +9,39 @@ namespace Scepix.Collections;
 /// Represents a readonly view of a <see cref="Grid2D{T}"/>
 /// </summary>
 /// <typeparam name="T">The type of the grid.</typeparam>
-public class Grid2DView<T>(Grid2D<T> _grid) : IEnumerable<T>,
+public class GridView<T>(IReadOnlyGrid<T> grid) : IEnumerable<T>,
     ICloneable
 {
     /// <inheritdoc cref="Grid2D{T}.Width"/>
-    public int Width => _grid.Width;
+    public int Width => grid.Width;
 
     /// <inheritdoc cref="Grid2D{T}.Height"/>
-    public int Height => _grid.Height;
-
-    /// <inheritdoc cref="Grid2D{T}.Size"/>
-    public int Size => _grid.Size;
+    public int Height => grid.Height;
 
     /// <summary>
     /// Gets an item from the given coordinate.
     /// </summary>
     /// <param name="x">The x-coordinate.</param>
     /// <param name="y">The y-coordinate.</param>
-    public T this[int x, int y] => _grid[x, y];
+    public T this[int x, int y] => grid[x, y];
     
     /// <summary>
     /// Gets an item from the given coordinate.
     /// </summary>
     /// <param name="coordinate">The coordinate.</param>
-    public T this[Vec2I coordinate] => _grid[coordinate];
+    public T this[Vec2I coordinate] => this[coordinate.X, coordinate.Y];
 
-    /// <inheritdoc cref="Grid2D{T}.Enumerate(bool)"/>
-    public IEnumerable<Vec2I> Enumerate(bool rowMajor = false) => _grid.Enumerate(rowMajor);
+    public IEnumerable<Vec2I> Enumerate(bool rowMajor = false)
+    {
+        return Utils.EnumerateRect(Width, Height, rowMajor);
+    }
 
     /// <inheritdoc cref="Grid2D{T}.Clone"/>
-    public object Clone() => _grid.Clone();
+    public object Clone() => grid.Clone();
 
-    public IEnumerator<T> GetEnumerator() => _grid.GetEnumerator();
+    public IEnumerator<T> GetEnumerator() => grid.GetEnumerator();
     
-    IEnumerator IEnumerable.GetEnumerator() => _grid.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => grid.GetEnumerator();
 
-    public override string ToString() => _grid.ToString();
+    public override string? ToString() => grid.ToString();
 }

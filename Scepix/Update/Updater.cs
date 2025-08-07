@@ -47,6 +47,11 @@ public class Updater
     public double FrameCap { get; set; } = -1;
 
     private double DeltaCap => 1.0 / FrameCap;
+    
+    /// <summary>
+    /// Gets the actual time taken for the update frame (excluding frame capping)
+    /// </summary>
+    public double UpdateTime { get; private set; }
 
     /// <summary>
     /// Starts the update thread.
@@ -88,6 +93,8 @@ public class Updater
         var frameTimer = Stopwatch.StartNew();
         var frameCount = 0;
         
+        var updateTimer = Stopwatch.StartNew();
+        
         Active = true;
         while (Active)
         {
@@ -97,6 +104,10 @@ public class Updater
             }
             
             OnUpdate?.Invoke(delta);
+            
+            updateTimer.Stop();
+
+            UpdateTime = updateTimer.Elapsed.TotalSeconds;
 
             if (FrameCap > 0)
             {
@@ -116,6 +127,8 @@ public class Updater
             
             delta = deltaTimer.Elapsed.TotalSeconds;
             deltaTimer.Restart();
+
+            updateTimer.Restart();
         }
     }
 }
