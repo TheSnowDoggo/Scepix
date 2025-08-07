@@ -34,10 +34,9 @@ public class VirtualGrid2D<T> : IReadOnlyGrid<T>
 
     public T this[Vec2I coordinate]
     {
-        get => (InRange(coordinate) ? _data.GetValueOrDefault(coordinate) : 
-            throw new ArgumentException($"{coordinate} is not a valid coordinate"))!;
-        set => _data[coordinate] = InRange(coordinate) ? value : 
+        get => InRange(coordinate) ? _data.GetValueOrDefault(coordinate) : 
             throw new ArgumentException($"{coordinate} is not a valid coordinate");
+        set => Set(coordinate, value);
     }
 
     public T this[int x, int y]
@@ -47,6 +46,23 @@ public class VirtualGrid2D<T> : IReadOnlyGrid<T>
     }
     
     public static implicit operator GridView<T>(VirtualGrid2D<T> grid) => grid.ToView();
+
+    protected virtual void Set(Vec2I coordinate, T value)
+    {
+        if (!InRange(coordinate))
+        {
+            throw new ArgumentException($"{coordinate} is not a valid coordinate");
+        }
+
+        if (value != null)
+        {
+            _data[coordinate] = value;
+        }
+        else
+        {
+            _data.Remove(coordinate);
+        }
+    }
     
     /// <summary>
     /// Determines whether the given coordinates are contained within the grid.
@@ -85,7 +101,7 @@ public class VirtualGrid2D<T> : IReadOnlyGrid<T>
         }
 
         value = this[x, y];
-        return true;
+        return value != null;
     }
     
     /// <summary>

@@ -1,9 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using Scepix.Collections;
+using Scepix.Pixel;
 using Scepix.Types;
 
-namespace Scepix.Pixel;
+namespace Scepix.Engines;
 
 public class TagEngineManager : IEnumerable<TagEngine>
 {

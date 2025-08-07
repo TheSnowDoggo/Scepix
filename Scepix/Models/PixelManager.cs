@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using Scepix.Collections;
 using Scepix.Update;
 using Scepix.Pixel;
 using Scepix.Types;
 using SkiaSharp;
+using Scepix.Engines;
 
 namespace Scepix.Models;
 
@@ -14,7 +13,7 @@ public class PixelManager
 {
     private readonly Updater _updater = new();
 
-    private readonly VirtualGrid2D<PixelData?> _grid = new(100, 100);
+    private readonly PixelSpace _grid = new(220, 100);
 
     private readonly Dictionary<string, PixelVariant> _variants = new()
     {
@@ -35,11 +34,16 @@ public class PixelManager
         Start();
     }
     
-    public GridView<PixelData?> Grid => _grid;
+    public class RenderEventArgs(GridView<PixelData?> grid, IEnumerable<Vec2I> changes) : EventArgs
+    {
+        public GridView<PixelData?> Grid { get; } = grid;
 
-    public event EventHandler? Render;
+        public IEnumerable<Vec2I> Changes { get; } = changes;
+    }
+    
+    public event EventHandler<RenderEventArgs>? Render;
 
-    public void Start()
+    private void Start()
     {
         _grid.Fill(p => new PixelData(_variants["sand"]), 30, 50, 10, 20);
         
@@ -48,7 +52,7 @@ public class PixelManager
         //_grid.Fill(p => new PixelData(_variants["water"]), 0, 70, 50, 50);
         _updater.OnUpdate += Update;
 
-        _updater.FrameCap = 30;
+        _updater.FrameCap = 60;
        
         _updater.Start();
     }
@@ -59,6 +63,8 @@ public class PixelManager
 
         _tagEngineManager.Update(delta, _grid);
        
-        Render?.Invoke(this, EventArgs.Empty);
+        Render?.Invoke(this, new RenderEventArgs(_grid, _grid.Changes));
+        
+        _grid.ClearChanges();
     }
 }

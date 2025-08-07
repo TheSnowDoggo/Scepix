@@ -20,12 +20,15 @@ public class PixelViewModel : ViewModelBase
 
     public Bitmap Bitmap => ToBitmap(_skBitmap);
 
-    private void Manager_OnRender(object? sender, EventArgs e)
+    private void Manager_OnRender(object? sender, PixelManager.RenderEventArgs e)
     {
-        if (_skBitmap.Width != _manager.Grid.Width || 
-            _skBitmap.Height != _manager.Grid.Height)
+        var resized = false;
+        
+        if (_skBitmap.Width != e.Grid.Width || 
+            _skBitmap.Height != e.Grid.Height)
         {
-            _skBitmap = CreateBitmap(_manager.Grid.Width, _manager.Grid.Height, SKColors.Black);
+            _skBitmap = CreateBitmap(e.Grid.Width, e.Grid.Height, SKColors.Black);
+            resized = true;
         }
         
         var paint = new SKPaint()
@@ -34,9 +37,9 @@ public class PixelViewModel : ViewModelBase
         };
 
         using var canvas = new SKCanvas(_skBitmap);
-        foreach (var pos in _manager.Grid.Enumerate())
+        foreach (var pos in resized ? e.Grid.Enumerate() : e.Changes)
         { 
-            var pixelData = _manager.Grid[pos];
+            var pixelData = e.Grid[pos];
 
             paint.Color = pixelData == null ? SKColors.Black : pixelData.Variant.Color;
 

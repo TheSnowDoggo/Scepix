@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using Scepix.Collections;
+using Scepix.Pixel;
 using Scepix.Types;
 
-namespace Scepix.Pixel;
+namespace Scepix.Engines;
 
 public abstract class TagEngine
 {

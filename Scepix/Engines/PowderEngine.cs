@@ -2,17 +2,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Scepix.Collections;
+using Scepix.Pixel;
 using Scepix.Types;
 
-namespace Scepix.Pixel;
+namespace Scepix.Engines;
 
 public class PowderEngine : TagEngine
 {
     private readonly Random _rand = new();
+
+    private readonly string _routing;
     
     public PowderEngine()
         : base("powder")
     {
+        _routing = $"{Tag}.routing";
     }
     
     public override void Update(double delta, IReadOnlyList<Vec2I> positions, VirtualGrid2D<PixelData?> grid)
@@ -45,7 +49,7 @@ public class PowderEngine : TagEngine
                         left = false;
                         break;
                     case true when rightClear:
-                        if (!data.Variant.Tags.TryGetContent<string>($"{Tag}.routing", out var routing))
+                        if (!data.Variant.Tags.TryGetContent<string>(_routing, out var routing))
                         {
                             routing = "rand";
                         }
