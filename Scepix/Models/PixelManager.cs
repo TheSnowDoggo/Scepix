@@ -49,6 +49,8 @@ public class PixelManager
         
         _grid.Fill(p => new PixelData(_variants["water"]), 0, 0, 100, 30);
         
+        _grid.Fill(p => new PixelData(_variants["oil"]), 180, 30, 40, 60);
+        
         //_grid.Fill(p => new PixelData(_variants["water"]), 0, 70, 50, 50);
         _updater.OnUpdate += Update;
 

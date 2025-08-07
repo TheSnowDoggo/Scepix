@@ -101,7 +101,7 @@ public class VirtualGrid2D<T> : IReadOnlyGrid<T>
         }
 
         value = this[x, y];
-        return value != null;
+        return true;
     }
     
     /// <summary>

@@ -43,11 +43,25 @@ public class LiquidEngine : TagEngine
 
                 var next = pos + heading;
                 
-                if (grid.TryGet(next + Vec2I.Down, out p) && p == null)
+                if (!grid.TryGet(next, out p) || p != null)
                 {
-                    grid.Swap(pos, next + Vec2I.Down);
+                    continue;
                 }
-                else if (grid.TryGet(next, out p) && p == null)
+
+                var moved = false;
+                for (var i = 1; i < 30; ++i)
+                {
+                    var move = next + Vec2I.Down + heading * i;
+                    
+                    if (grid.TryGet(move, out p) && p == null)
+                    {
+                        grid.Swap(pos, move);
+                        moved = true;
+                        break;
+                    }
+                }
+                
+                if (!moved)
                 {
                     grid.Swap(pos, next);
                 } 
