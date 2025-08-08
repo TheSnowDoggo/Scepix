@@ -275,7 +275,7 @@ public static class Utils
     /// </summary>
     /// <param name="source">The source string</param>
     /// <returns>true if the value parameter is null or Empty, or if value consists exclusively of white-space characters.</returns>
-    public static bool IsNullOrWhitespace(this string?  source)
+    public static bool IsNullOrWhitespace(this string? source)
     {
         return string.IsNullOrWhiteSpace(source);
     }

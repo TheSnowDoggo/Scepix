@@ -1,52 +1,54 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Scepix.Collections;
 using Scepix.Pixel;
 using Scepix.Types;
 
 namespace Scepix.Engines;
 
-public class LiquidEngine : TagEngine
+public class LiquidEngine() : TagEngine("liquid")
 {
     private readonly Random _rand = new();
 
-    private readonly string _heading;
+    private const string DensityTag = "*.density";
 
-    private readonly string _density;
+    private const string HeadingTag = "liquid.heading";
 
-    public LiquidEngine()
-        : base("liquid")
-    {
-        _heading = $"{Tag}.heading";
-        _density = $"{Tag}.density";
-    }
+    private const string AntiTag = "liquid.anti";
 
-    public override void Update(double delta, IReadOnlyList<Vec2I> positions, VirtualGrid2D<PixelData?> grid)
+    public override void Update(double delta, IReadOnlyList<Vec2I> positions, PixelSpace space)
     {
         foreach (var pos in positions.Shuffle().OrderBy(p => -p.Y))
         {
-            if (pos.Y == grid.Height - 1 || grid[pos] is not {} data)
+            if (space[pos] is not {} data)
+            {
+                continue;
+            }
+            
+            var anti = data.Variant.DataTags.HasTag(AntiTag);
+
+            if (anti ? pos.Y == 0 : pos.Y == space.Height - 1)
             {
                 continue;
             }
 
-            var density = data.Variant.Tags.GetContentOrDefault<int>(_density);
+            var density = data.Variant.DataTags.GetContentOrDefault<int>(DensityTag);
 
-            if (Valid(pos + Vec2I.Down))
+            var down = anti ? Vec2I.Up : Vec2I.Down;
+
+            if (Valid(pos + down))
             {
-                grid.Swap(pos, pos + Vec2I.Down);
-                data.LocalTags.Remove(_heading);
+                space.Swap(pos, pos + down);
             }
             else
             {
-                if (!data.LocalTags.TryGetContent(_heading, out bool hDir) || !Valid(pos + Heading(hDir)))
+                if (!data.LocalTags.TryGetContent<bool>(HeadingTag, out var hDir) || !Valid(pos + Heading(hDir)))
                 {
                     hDir = _rand.NextBool();
-                    data.LocalTags[string.Intern(_heading)] = hDir;
+                    data.LocalTags[HeadingTag] = hDir;
                 }
 
-                var heading = Heading(hDir);
+                var heading =  Heading(hDir);
 
                 var next = pos + heading;
                 
@@ -58,31 +60,41 @@ public class LiquidEngine : TagEngine
                 var moved = false;
                 for (var i = 1; i < 30; ++i)
                 {
-                    var move = next + Vec2I.Down + heading * i;
+                    var move = next + down + heading * i;
                     
-                    if (!Valid(move))
+                    if (!Valide(move, out var p))
                     {
+                        if (p != null && p.Variant != data.Variant)
+                        {
+                            break;
+                        }
+                        
                         continue;
                     }
                     
-                    grid.Swap(pos, move);
+                    space.Swap(pos, move);
                     moved = true;
                     break;
                 }
                 
                 if (!moved)
                 {
-                    grid.Swap(pos, next);
+                    space.Swap(pos, next);
                 } 
             }
 
             continue;
 
-            bool Valid(Vec2I t)
+            bool Valide(Vec2I t, out PixelData? p)
             {
-                return grid.TryGet(t, out var p) && (p == null || (p.Variant != data.Variant && p.Variant.Tags.HasTag(Tag) && p.Variant.Tags.GetContentOrDefault<int>(_density) < density));
+                return space.TryGet(t, out p) && (p == null || (p.Variant != data.Variant && p.Variant.DataTags.GetContentOrDefault<int>(DensityTag) < density));
             }
 
+            bool Valid(Vec2I t)
+            {
+                return Valide(t, out _);
+            }
+            
             Vec2I Heading(bool heading)
             {
                 return heading ? Vec2I.Left : Vec2I.Right;

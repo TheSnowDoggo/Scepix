@@ -6,20 +6,15 @@ using Scepix.Types;
 
 namespace Scepix.Engines;
 
-public class DecayEngine : TagEngine
+public class DecayEngine() : TagEngine("decay")
 {
     private readonly Random _rand = new();
-    
-    public DecayEngine()
-        : base("decay")
-    {
-    }
-    
-    public override void Update(double delta, IReadOnlyList<Vec2I> positions, VirtualGrid2D<PixelData?> grid)
+
+    public override void Update(double delta, IReadOnlyList<Vec2I> positions, PixelSpace space)
     {
         foreach (var pos in positions)
         {
-            var data = grid[pos];
+            var data = space[pos];
             
             if (data == null)
             {
@@ -27,14 +22,14 @@ public class DecayEngine : TagEngine
             }
 
             var decayRate = 0.01;
-            if (data.Variant.Tags.TryGetContent(Tag, out double decay))
+            if (data.Variant.DataTags.TryGetContent(Tag, out double decay))
             {
                 decayRate = decay;
             }
 
             if (_rand.NextDouble() < decayRate)
             {
-                grid[pos] = null;
+                space[pos] = null;
             }
         }
     }

@@ -15,7 +15,7 @@ public class TagEngineManager : IEnumerable<TagEngine>
         _engines.Add(engine.Tag, engine);
     }
 
-    public void Update(double delta, VirtualGrid2D<PixelData?> grid)
+    public void Update(double delta, PixelSpace grid)
     {
         var dict = QueryTagInfo(grid);
         
@@ -30,7 +30,7 @@ public class TagEngineManager : IEnumerable<TagEngine>
         }
     }
     
-    private static Dictionary<string, List<Vec2I>> QueryTagInfo(VirtualGrid2D<PixelData?> grid)
+    private static Dictionary<string, List<Vec2I>> QueryTagInfo(PixelSpace grid)
     {
         var dict = new Dictionary<string, List<Vec2I>>();
         
@@ -41,7 +41,7 @@ public class TagEngineManager : IEnumerable<TagEngine>
                 continue;
             }
             
-            foreach (var tag in data.Variant.Tags.Tags)
+            foreach (var tag in data.Variant.EngineTags)
             {
                 if (dict.TryGetValue(tag, out var list))
                 {

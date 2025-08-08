@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using Scepix.Pixel;
+using Scepix.Collections;
 using Scepix.Types;
 
-namespace Scepix.Collections;
+namespace Scepix.Pixel;
 
 public class PixelSpace : VirtualGrid2D<PixelData?>
 {
@@ -14,6 +14,8 @@ public class PixelSpace : VirtualGrid2D<PixelData?>
     }
 
     public bool LogChanges { get; set; } = true;
+
+    public NameDict<PixelVariant> Variants { get; init; } = [];
 
     protected override void Set(Vec2I coordinate, PixelData? value)
     {

@@ -13,20 +13,76 @@ public class PixelManager
 {
     private readonly Updater _updater = new();
 
-    private readonly PixelSpace _grid = new(220, 100);
-
-    private readonly Dictionary<string, PixelVariant> _variants = new()
+    private readonly PixelSpace _space = new(220, 100)
     {
-        { "sand", new PixelVariant() { Color = SKColors.Yellow, Tags = new TagSet() { "powder" }, } },
-        { "gravel", new PixelVariant() { Color = SKColors.Gray, Tags = new TagSet() { "powder" } } },
-        { "water", new PixelVariant() { Color = SKColors.RoyalBlue, Tags = new TagSet() { "liquid" } }},
-        { "oil", new PixelVariant() { Color = SKColors.DarkSlateGray, Tags = new TagSet() { "liquid", { "liquid.density", 3 } } }}
+        Variants = 
+        [
+            new PixelVariant("sand")
+            {
+                Color = SKColors.Yellow, 
+                EngineTags = ["powder", "wet"],
+                DataTags = new TagMap()
+                {
+                    { "wet.recipes", new Dictionary<string, WetEngine.Recipe>
+                        {
+                            { "water", new WetEngine.Recipe("wetsand") { MinTime = 5, MaxTime = 20 } },
+                            { "wetsand", new WetEngine.Recipe("wetsand") { MinTime = 20, MaxTime = 120 } }
+                        }
+                    },
+                    { "wet.axis", WetEngine.AxisType.AllAxis },
+                    { "*.density", 10 }
+                }
+            },
+            new PixelVariant("wetsand")
+            {
+                Color = SKColors.BurlyWood,
+                EngineTags = ["powder"],
+                DataTags = new TagMap()
+                {
+                    { "*.density", 10 }
+                }
+            },
+            new PixelVariant("gravel")
+            {
+                Color = SKColors.Gray, 
+                EngineTags = ["powder"],
+            },
+            new PixelVariant("water")
+            {
+                Color = SKColors.RoyalBlue, 
+                EngineTags = ["liquid"],
+                DataTags = new TagMap()
+                {
+                    { "*.density", 0 },
+                }
+            },
+            new PixelVariant("oil")
+            {
+                Color = SKColors.DarkSlateGray, 
+                EngineTags = ["liquid"],
+                DataTags = new TagMap()
+                {
+                    { "*.density", 3 },
+                } 
+            },
+            new PixelVariant("co2")
+            {
+                Color = SKColors.LightGray,
+                EngineTags = ["gas", "liquid"],
+                DataTags = new TagMap()
+                {
+                    "liquid.anti",
+                }
+            }
+        ]
     };
-
+    
     private readonly TagEngineManager _tagEngineManager =
     [
         new PowderEngine(),
         new LiquidEngine(),
+        new GasEngine(),
+        new WetEngine(),
     ];
 
     public PixelManager()
@@ -45,16 +101,17 @@ public class PixelManager
 
     private void Start()
     {
-        //_grid.Fill(p => new PixelData(_variants["sand"]), 30, 50, 10, 20);
+        _space.Fill(p => new PixelData(_space.Variants["sand"]), 30, 50, 40, 20);
         
-        _grid.Fill(p => new PixelData(_variants["water"]), 30, 0, 60, 30);
+        _space.Fill(p => new PixelData(_space.Variants["water"]), 30, 0, 80, 40);
         
-        _grid.Fill(p => new PixelData(_variants["oil"]), 0, 40, 180, 60);
+        //_space.Fill(p => new PixelData(_space.Variants["co2"]), 80, 0, 60, 30);
         
-        //_grid.Fill(p => new PixelData(_variants["water"]), 0, 70, 50, 50);
+        //_space.Fill(p => new PixelData(_space.Variants["oil"]), 160, 50, 50, 20);
+        
         _updater.OnUpdate += Update;
 
-        _updater.FrameCap = 60;
+        _updater.FrameCap = 20;
        
         _updater.Start();
     }
@@ -63,10 +120,10 @@ public class PixelManager
     {
         Console.WriteLine($"delta: {delta} real: {1.0 / _updater.UpdateTime:0.00} FPS: {_updater.FPS}");
 
-        _tagEngineManager.Update(delta, _grid);
+        _tagEngineManager.Update(delta, _space);
        
-        Render?.Invoke(this, new RenderEventArgs(_grid, _grid.Changes));
+        Render?.Invoke(this, new RenderEventArgs(_space, _space.Changes));
         
-        _grid.ClearChanges();
+        _space.ClearChanges();
     }
 }

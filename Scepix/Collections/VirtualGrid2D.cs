@@ -34,8 +34,8 @@ public class VirtualGrid2D<T> : IReadOnlyGrid<T>
 
     public T this[Vec2I coordinate]
     {
-        get => InRange(coordinate) ? _data.GetValueOrDefault(coordinate) : 
-            throw new ArgumentException($"{coordinate} is not a valid coordinate");
+        get => (InRange(coordinate) ? _data.GetValueOrDefault(coordinate) : 
+            throw new ArgumentException($"{coordinate} is not a valid coordinate"))!;
         set => Set(coordinate, value);
     }
 

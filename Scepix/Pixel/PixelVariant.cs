@@ -1,11 +1,22 @@
+using System.Collections.Generic;
 using SkiaSharp;
 using Scepix.Types;
+using Scepix.Collections;
 
 namespace Scepix.Pixel;
 
-public class PixelVariant
+public class PixelVariant : INameIdentifiable
 {
-    public SKColor Color { get; set; } = SKColors.Black;
+    public PixelVariant(string name)
+    {
+        Name = name;
+    }
+    
+    public string Name { get; }
+    
+    public SKColor Color { get; init; } = SKColors.Black;
 
-    public TagSet Tags { get; init; } = new();
+    public HashSet<string> EngineTags { get; init; } = [];
+    
+    public TagMap DataTags { get; init; } = new();
 }

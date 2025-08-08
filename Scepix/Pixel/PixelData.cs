@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Scepix.Types;
 
 namespace Scepix.Pixel;
@@ -11,5 +12,10 @@ public class PixelData
     
     public PixelVariant Variant { get; }
 
-    public TagSet LocalTags { get; } = new();
+    public TagMap LocalTags { get; } = new TagMap();
+    
+    public bool IsEngine(string tag)
+    {
+        return Variant.EngineTags.Contains(tag);
+    }
 }

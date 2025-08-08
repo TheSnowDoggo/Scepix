@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Scepix.Types;
 
@@ -25,6 +26,22 @@ public struct Vec2I : IEquatable<Vec2I>
     public static Vec2I UpRight   => new Vec2I(+1, -1);
     public static Vec2I DownLeft  => new Vec2I(-1, +1);
     public static Vec2I DownRight => new Vec2I(+1, +1);
+    
+    public static IReadOnlyList<Vec2I> StarAxis { get; } =
+    [
+        Vec2I.Up,
+        Vec2I.Right,
+        Vec2I.Down,
+        Vec2I.Left,
+    ];
+    
+    public static IReadOnlyList<Vec2I> CrossAxis { get; } =
+    [
+        Vec2I.UpLeft,
+        Vec2I.UpRight,
+        Vec2I.DownRight,
+        Vec2I.DownLeft,
+    ];
 
     public static bool operator ==(Vec2I v1, Vec2I v2) => v1.Equals(v2);
     

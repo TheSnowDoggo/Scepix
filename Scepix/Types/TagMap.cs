@@ -9,16 +9,16 @@ namespace Scepix.Types;
 /// <summary>
 /// A class representing a string and tags.
 /// </summary>
-public class TagSet : IEnumerable<KeyValuePair<string, object?>>,
+public class TagMap : IEnumerable<KeyValuePair<string, object?>>,
     ICloneable
 {
     private readonly Dictionary<string, object?> _tags = new();
 
-    public TagSet()
+    public TagMap()
     {
     }
 
-    public TagSet(IEnumerable<KeyValuePair<string, object?>> tags)
+    public TagMap(IEnumerable<KeyValuePair<string, object?>> tags)
     {
         _tags = new Dictionary<string, object?>(tags);
     }
@@ -56,9 +56,9 @@ public class TagSet : IEnumerable<KeyValuePair<string, object?>>,
     /// Adds a new empty tag.
     /// </summary>
     /// <param name="tag">The name of the tag.</param>
-    public void Add(string tag)
+    public bool Add(string tag)
     {
-        _tags.Add(tag, null);
+        return _tags.TryAdd(tag, null);
     }
 
     /// <summary>
@@ -122,7 +122,7 @@ public class TagSet : IEnumerable<KeyValuePair<string, object?>>,
     /// <param name="content">The content associated with the tag.</param>
     /// <typeparam name="T">The type to unbox the contents to.</typeparam>
     /// <returns>true if the specified tag exists; otherwise, false</returns>
-    public bool TryGetContent<T>(string tag, [MaybeNullWhen(false)] out T? content)
+    public bool TryGetContent<T>(string tag, [MaybeNullWhen(false)] out T content)
     {
         var res = TryGetContent(tag, out var obj);
         content = obj == null ? default : (T)obj;
@@ -152,6 +152,6 @@ public class TagSet : IEnumerable<KeyValuePair<string, object?>>,
 
     public object Clone()
     {
-        return  new TagSet(_tags);
+        return  new TagMap(_tags);
     }
 }
