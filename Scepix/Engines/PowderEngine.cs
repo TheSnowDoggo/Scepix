@@ -17,24 +17,14 @@ public class PowderEngine() : TagEngine("powder")
         Right,
     }
     
-    private class VariantCache
+    private class VariantCache(int density, RoutingMode routing, bool anti)
     {
-        public VariantCache(int density, RoutingMode routing, bool anti)
-        {
-            Density = density;
-            Routing = routing;
-            Anti = anti;
-            Down = anti ? Vec2I.Up : Vec2I.Down;
-            DownLeft = anti ? Vec2I.UpLeft : Vec2I.DownLeft;
-            DownRight = anti ? Vec2I.UpRight : Vec2I.DownRight;
-        }
-        
-        public int Density { get; }
-        public RoutingMode Routing { get; }
-        public bool Anti { get; }
-        public Vec2I Down { get; }
-        public Vec2I DownLeft { get; }
-        public Vec2I DownRight { get; }
+        public int Density { get; } = density;
+        public RoutingMode Routing { get; } = routing;
+        public bool Anti { get; } = anti;
+        public Vec2I Down { get; } = anti ? Vec2I.Up : Vec2I.Down;
+        public Vec2I DownLeft { get; } = anti ? Vec2I.UpLeft : Vec2I.DownLeft;
+        public Vec2I DownRight { get; } = anti ? Vec2I.UpRight : Vec2I.DownRight;
     }
     
     private readonly struct ValidInfo(PixelSpace space, PixelVariant variant, int density, Dictionary<PixelVariant, int> densityCache)

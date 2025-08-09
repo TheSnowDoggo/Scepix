@@ -8,11 +8,12 @@ namespace Scepix.Engines;
 
 public class LiquidEngine() : TagEngine("liquid")
 {
-    private class VariantCache(int density, bool anti, int spill)
+    private class VariantCache(int density, int spill, bool anti)
     {
         public int Density { get; } = density;
-        public bool Anti { get; } = anti;
         public int Spill { get; } = spill;
+        public bool Anti { get; } = anti;
+        public Vec2I Down { get; } = anti ? Vec2I.Up : Vec2I.Down;
     }
 
     private readonly struct ValidInfo(PixelSpace space, PixelVariant variant, int density, Dictionary<PixelVariant, int> densityCache)
@@ -57,77 +58,79 @@ public class LiquidEngine() : TagEngine("liquid")
             {
                 var density = data.Variant.DataTags.GetContentOrDefault<int>(DensityTag);
                 
-                var anti = data.Variant.DataTags.Contains(AntiTag);
-                
                 var spill = data.Variant.DataTags.GetContentOrDefault(SpillTag, DefaultSpill);
                 
-                cache = new VariantCache(density, anti, spill);
+                var anti = data.Variant.DataTags.Contains(AntiTag);
+                
+                cache = new VariantCache(density, spill, anti);
                 variantCache[data.Variant] = cache;
             }
 
-            var info = new ValidInfo(space, data.Variant, cache.Density, densityCache);
-            
             if (cache.Anti ? pos.Y == 0 : pos.Y == space.Height - 1)
             {
                 continue;
             }
+            
+            var info = new ValidInfo(space, data.Variant, cache.Density, densityCache);
 
-            var down = cache.Anti ? Vec2I.Up : Vec2I.Down;
-
-            if (Valid(pos + down, info, out _))
+            var next = cache.Down;
+            
+            if (Valid(next, info, out _))
             {
-                space.Swap(pos, pos + down);
+                space.Swap(pos, next);
                 data.LocalTags.Remove(HeadingTag, HeadingLeftTag);
+                continue;
             }
-            else
+            
+            if (!data.LocalTags.Contains(HeadingTag) ||
+                !Valid(pos + (data.LocalTags.Contains(HeadingLeftTag) ? Vec2I.Left : Vec2I.Right), info, out _))
             {
-                if (!data.LocalTags.Contains(HeadingTag) ||
-                    !Valid(pos + (data.LocalTags.Contains(HeadingLeftTag) ? Vec2I.Left : Vec2I.Right), info, out _))
+                if (_rand.NextBool())
                 {
-                    if (_rand.NextBool())
-                    {
-                        data.LocalTags.Add(HeadingLeftTag);
-                    }
-                    else
-                    {
-                        data.LocalTags.Remove(HeadingLeftTag);
-                    }
+                    data.LocalTags.Add(HeadingLeftTag);
                 }
-
-                var heading = data.LocalTags.Contains(HeadingLeftTag) ? Vec2I.Left : Vec2I.Right;
-
-                var next = pos + heading;
-                
-                if (!Valid(next, info, out _))
+                else
                 {
+                    data.LocalTags.Remove(HeadingLeftTag);
+                }
+            }
+
+            var heading = data.LocalTags.Contains(HeadingLeftTag) ? Vec2I.Left : Vec2I.Right;
+
+            next = pos + heading;
+                
+            if (!Valid(next, info, out _))
+            {
+                continue;
+            }
+                
+            var moved = false;
+            
+            for (var i = 1; i < cache.Spill; ++i)
+            {
+                var move = next + cache.Down + heading * i;
+                    
+                if (!Valid(move, info, out var p))
+                {
+                    if (p != null && p.Variant != data.Variant)
+                    {
+                        break;
+                    }
+                        
                     continue;
                 }
-                
-                var moved = false;
-                for (var i = 1; i < cache.Spill; ++i)
-                {
-                    var move = next + down + heading * i;
                     
-                    if (!Valid(move, info, out var p))
-                    {
-                        if (p != null && p.Variant != data.Variant)
-                        {
-                            break;
-                        }
-                        
-                        continue;
-                    }
-                    
-                    space.Swap(pos, move);
-                    moved = true;
-                    break;
-                }
-                
-                if (!moved)
-                {
-                    space.Swap(pos, next);
-                } 
+                space.Swap(pos, move);
+                moved = true;
+                break;
             }
+                
+            if (moved)
+            {
+                continue;
+            } 
+            
+            space.Swap(pos, next);
         }
     }
     
