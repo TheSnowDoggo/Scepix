@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Scepix.Collections;
@@ -88,9 +89,11 @@ public class PixelManager
         new WetEngine(),
     ];
 
-    private bool filling = false;
+    private bool _filling = false;
 
-    private Vec2I mousePos = Vec2I.Zero;
+    private Vec2I _mousePos = Vec2I.Zero;
+
+    private double _statsTimer;
 
     public PixelManager()
     {
@@ -112,10 +115,6 @@ public class PixelManager
         
         //_space.Fill(p => _space.Make("water"), 30, 0, 80, 40);
         
-        //_space.Fill(p => new PixelData(_space.Variants["co2"]), 80, 40, 60, 30);
-        
-        //_space.Fill(p => new PixelData(_space.Variants["oil"]), 160, 50, 50, 20);
-        
         _updater.OnUpdate += Update;
 
         _updater.FrameCap = 60;
@@ -123,15 +122,25 @@ public class PixelManager
         _updater.Start();
     }
 
+    private readonly Stopwatch sw = new();
+
     private void Update(double delta)
     {
-        Console.WriteLine($"delta: {delta} real: {1.0 / _updater.UpdateTime:0.00} FPS: {_updater.FPS}");
+        if (_statsTimer > 0)
+        {
+            _statsTimer -= delta;
+        }
+        else
+        {
+            Console.WriteLine($"delta: {delta} real: {1.0 / _updater.UpdateTime:0.00} FPS: {_updater.FPS}");
+            _statsTimer = 0.5;
+        }
 
-        if (filling)
+        if (_filling)
         {
             foreach (var off in EnumerateCircle(5))
             {
-                var pos = mousePos + off;
+                var pos = _mousePos + off;
                 if (_space.InRange(pos))
                 {
                     _space[pos] = _space.Make("sand");
@@ -140,9 +149,9 @@ public class PixelManager
         }
 
         _tagEngineManager.Update(delta, _space);
-       
+
         Render?.Invoke(this, new RenderEventArgs(_space, _space.Changes));
-        
+
         _space.ClearChanges();
     }
     
@@ -151,13 +160,13 @@ public class PixelManager
         switch (modify)
         {
             case MainWindow.PointerModify.Release:
-                filling = false;
+                _filling = false;
                 return;
             case MainWindow.PointerModify.Press:
-                filling = true;
+                _filling = true;
                 break;
             case MainWindow.PointerModify.Move:
-                if (!filling)
+                if (!_filling)
                 {
                     return;
                 }
@@ -173,7 +182,7 @@ public class PixelManager
         var x = (int)Math.Round(rawPos.X / sender.Bounds.Size.Width * _space.Width);
         var y = (int)Math.Round(rawPos.Y / sender.Bounds.Size.Height * _space.Height);
         
-        mousePos = new Vec2I(x, y);
+        _mousePos = new Vec2I(x, y);
     }
     
     private static HashSet<Vec2I> EnumerateCircle(double radius)

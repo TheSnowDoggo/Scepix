@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using Scepix.Collections;
 using Scepix.Pixel;
@@ -9,11 +10,31 @@ namespace Scepix.Engines;
 
 public class PowderEngine() : TagEngine("powder")
 {
-    private class VariantCache(int density, bool anti, string routing)
+    public enum RoutingMode
     {
-        public int Density { get; } = density;
-        public bool Anti { get; } = anti;
-        public string Routing { get; } = routing;
+        Random,
+        Left,
+        Right,
+    }
+    
+    private class VariantCache
+    {
+        public VariantCache(int density, RoutingMode routing, bool anti)
+        {
+            Density = density;
+            Routing = routing;
+            Anti = anti;
+            Down = anti ? Vec2I.Up : Vec2I.Down;
+            DownLeft = anti ? Vec2I.UpLeft : Vec2I.DownLeft;
+            DownRight = anti ? Vec2I.UpRight : Vec2I.DownRight;
+        }
+        
+        public int Density { get; }
+        public RoutingMode Routing { get; }
+        public bool Anti { get; }
+        public Vec2I Down { get; }
+        public Vec2I DownLeft { get; }
+        public Vec2I DownRight { get; }
     }
     
     private readonly struct ValidInfo(PixelSpace space, PixelVariant variant, int density, Dictionary<PixelVariant, int> densityCache)
@@ -25,6 +46,8 @@ public class PowderEngine() : TagEngine("powder")
     }
     
     private readonly Random _rand = new();
+
+    private const RoutingMode DefaultRouting = RoutingMode.Random;
     
     private const string DensityTag = "density";
 
@@ -51,65 +74,58 @@ public class PowderEngine() : TagEngine("powder")
             {
                 var density = data.Variant.DataTags.GetContentOrDefault<int>(DensityTag);
                 
-                var anti = data.Variant.DataTags.Contains(AntiTag);
+                var routing = data.Variant.DataTags.GetContentOrDefault(RoutingTag, DefaultRouting);
                 
-                var routing = data.Variant.DataTags.GetContentOrDefault<string>(RoutingTag, "rand");
+                var anti = data.Variant.DataTags.Contains(AntiTag);
 
-                cache = new VariantCache(density, anti, routing);
+                cache = new VariantCache(density, routing, anti);
                 variantCache[data.Variant] = cache;
             }
 
-            var info = new ValidInfo(space, data.Variant, cache.Density, densityCache);
-            
             if (cache.Anti ? pos.Y == 0 : pos.Y == space.Height - 1)
             {
                 continue;
             }
+            
+            var info = new ValidInfo(space, data.Variant, cache.Density, densityCache);
 
-            var down = cache.Anti ? Vec2I.Up : Vec2I.Down;
-            var downLeft = cache.Anti ? Vec2I.UpLeft : Vec2I.DownLeft;
-            var downRight = cache.Anti ? Vec2I.UpRight : Vec2I.DownRight;
-
-            if (Valid(pos + down, info))
+            var next = pos + cache.Down;
+            
+            if (Valid(next, info))
             {
-                space.Swap(pos, pos + down);
+                space.Swap(pos, next);
+                continue;
             }
-            else
+
+            var leftMove = pos + cache.DownLeft;
+            var leftClear = Valid(leftMove, info);
+            
+            var rightMove = pos + cache.DownRight;
+            var rightClear = Valid(rightMove, info);
+
+            bool goLeft;
+            switch (leftClear)
             {
-                var leftClear = Valid(pos + downLeft, info);
-                var rightClear = Valid(pos + downRight, info);
-
-                bool left;
-                switch (leftClear)
-                {
-                    case true when !rightClear:
-                        left = true;
-                        break;
-                    case false when rightClear:
-                        left = false;
-                        break;
-                    case true when rightClear:
-                        left = cache.Routing switch
-                        {
-                            "rand" => _rand.NextBool(),
-                            "left" => true,
-                            "right" => false,
-                            _ => throw new ArgumentException("Undefined routing mode.")
-                        };
-                        break;
-                    default:
-                        continue;
-                }
-
-                if (left)
-                {
-                    space.Swap(pos, pos + downLeft);
-                }
-                else
-                {
-                    space.Swap(pos, pos + downRight);
-                }
+                case true when !rightClear:
+                    goLeft = true;
+                    break;
+                case false when rightClear:
+                    goLeft = false;
+                    break;
+                case true when rightClear:
+                    goLeft = cache.Routing switch
+                    {
+                        RoutingMode.Random => _rand.NextBool(),
+                        RoutingMode.Left => true,
+                        RoutingMode.Right => false,
+                        _ => throw new ArgumentException("Undefined routing mode.")
+                    };
+                    break;
+                default:
+                    continue;
             }
+
+            space.Swap(pos, goLeft ? leftMove : rightMove);
         }
     }
     

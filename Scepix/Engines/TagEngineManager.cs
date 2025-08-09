@@ -30,13 +30,13 @@ public class TagEngineManager : IEnumerable<TagEngine>
         }
     }
     
-    private static Dictionary<string, List<Coord>> QueryTagInfo(PixelSpace grid)
+    private static Dictionary<string, List<Coord>> QueryTagInfo(PixelSpace space)
     {
         var dict = new Dictionary<string, List<Coord>>();
         
-        foreach (var pos in grid.EnumerateFilled())
+        foreach (var pos in space.Positions)
         {
-            if (grid[pos] is not {} data)
+            if (space[pos] is not {} data)
             {
                 continue;
             }
@@ -49,7 +49,7 @@ public class TagEngineManager : IEnumerable<TagEngine>
                 }
                 else
                 {
-                    dict[tag] = [ (Coord)pos ];
+                    dict[tag] = [(Coord)pos];
                 }
             }
         }

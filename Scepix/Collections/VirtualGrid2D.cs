@@ -124,7 +124,7 @@ public class VirtualGrid2D<T> : IReadOnlyGrid<T>
         return new GridView<T>(this);
     }
 
-    public IEnumerable<Vec2I> EnumerateFilled() => from pos in _data.Keys select pos;
+    public Dictionary<Vec2I,T>.KeyCollection Positions => _data.Keys;
     
     public void Fill(Func<Vec2I, T> fill, int x, int y, int width, int height)
     {
