@@ -8,6 +8,7 @@ using Scepix.Pixel;
 using Scepix.Types;
 using SkiaSharp;
 using Scepix.Engines;
+using Scepix.Views;
 
 namespace Scepix.Models;
 
@@ -86,8 +87,10 @@ public class PixelManager
         new GasEngine(),
         new WetEngine(),
     ];
-    
-    private readonly Queue<Vec2I> _fillQueue = new();
+
+    private bool filling = false;
+
+    private Vec2I mousePos = Vec2I.Zero;
 
     public PixelManager()
     {
@@ -105,9 +108,9 @@ public class PixelManager
 
     private void Start()
     {
-        _space.Fill(p => new PixelData(_space.Variants["sand"]), 0, 0, 100, 30);
+        _space.Fill(p => _space.Make("sand"), 0, 0, 100, 30);
         
-        _space.Fill(p => new PixelData(_space.Variants["water"]), 30, 0, 80, 40);
+        //_space.Fill(p => _space.Make("water"), 30, 0, 80, 40);
         
         //_space.Fill(p => new PixelData(_space.Variants["co2"]), 80, 40, 60, 30);
         
@@ -124,16 +127,14 @@ public class PixelManager
     {
         Console.WriteLine($"delta: {delta} real: {1.0 / _updater.UpdateTime:0.00} FPS: {_updater.FPS}");
 
-        while (_fillQueue.Count > 0)
+        if (filling)
         {
-            var pixelPos = _fillQueue.Dequeue();
-            
             foreach (var off in EnumerateCircle(5))
             {
-                var pos = pixelPos + off;
+                var pos = mousePos + off;
                 if (_space.InRange(pos))
                 {
-                    _space[pos] = new PixelData(_space.Variants["sand"]);
+                    _space[pos] = _space.Make("sand");
                 }
             }
         }
@@ -144,24 +145,35 @@ public class PixelManager
         
         _space.ClearChanges();
     }
-
-    public void Space_OnPointerPressed(object? sender, PointerPressedEventArgs e)
+    
+    public void Space_PointerModify(MainWindow.PointerModify modify, Control sender, PointerEventArgs e)
     {
-        if (sender is not Control control)
+        switch (modify)
         {
-            return;
+            case MainWindow.PointerModify.Release:
+                filling = false;
+                return;
+            case MainWindow.PointerModify.Press:
+                filling = true;
+                break;
+            case MainWindow.PointerModify.Move:
+                if (!filling)
+                {
+                    return;
+                }
+                break;
+            default:
+                throw new ArgumentException("Unknown modify type");
         }
-        
-        var point = e.GetCurrentPoint(control);
+
+        var point = e.GetCurrentPoint(sender);
         
         var rawPos = point.Position;
         
-        var x = (int)Math.Round(rawPos.X / control.Bounds.Size.Width * _space.Width);
-        var y = (int)Math.Round(rawPos.Y / control.Bounds.Size.Height * _space.Height);
+        var x = (int)Math.Round(rawPos.X / sender.Bounds.Size.Width * _space.Width);
+        var y = (int)Math.Round(rawPos.Y / sender.Bounds.Size.Height * _space.Height);
         
-        var pixelPos = new Vec2I(x, y);
-        
-        _fillQueue.Enqueue(pixelPos);
+        mousePos = new Vec2I(x, y);
     }
     
     private static HashSet<Vec2I> EnumerateCircle(double radius)

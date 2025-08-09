@@ -33,4 +33,9 @@ public class PixelSpace : VirtualGrid2D<PixelData?>
     {
         _changes.Clear();
     }
+
+    public PixelData Make(string variant)
+    {
+        return new PixelData(Variants[variant]);
+    }
 }

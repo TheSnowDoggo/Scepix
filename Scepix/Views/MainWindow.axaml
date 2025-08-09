@@ -15,6 +15,12 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <Image Source="{Binding PixelViewModel.Bitmap}" PointerPressed="Space_OnPointerPressed" RenderOptions.BitmapInterpolationMode="None"></Image>
+    <Image Source="{Binding PixelViewModel.Bitmap}"
+           RenderOptions.BitmapInterpolationMode="None"
+           PointerPressed="Space_OnPointerPressed"
+           PointerMoved="Space_OnPointerMoved"
+           PointerReleased="Space_OnPointerReleased"
+           >
+    </Image>
 
 </Window>

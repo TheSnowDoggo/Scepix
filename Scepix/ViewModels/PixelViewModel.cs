@@ -1,9 +1,11 @@
 using System;
 using System.Diagnostics;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Scepix.Models;
 using SkiaSharp;
 using Avalonia.Media.Imaging;
+using Scepix.Views;
 
 namespace Scepix.ViewModels;
 
@@ -69,8 +71,8 @@ public class PixelViewModel : ViewModelBase
         return new Bitmap(stream);
     }
     
-    public void Space_OnPointerPressed(object? sender, PointerPressedEventArgs e)
+    public void Space_PointerModify(MainWindow.PointerModify modify, Control sender, PointerEventArgs e)
     {
-        _manager.Space_OnPointerPressed(sender, e);
+        _manager.Space_PointerModify(modify, sender, e);
     }
 }
