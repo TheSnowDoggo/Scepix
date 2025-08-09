@@ -22,7 +22,7 @@ public class DecayEngine() : TagEngine("decay")
             }
 
             var decayRate = 0.01;
-            if (data.Variant.DataTags.TryGetContent(Tag, out double decay))
+            if (data.Variant.DataTags.TryGetValue(Tag, out double decay))
             {
                 decayRate = decay;
             }

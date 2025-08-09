@@ -53,7 +53,7 @@ public class WetEngine() : TagEngine("wet")
 
             if (cache == null)
             {
-                if (!data.Variant.DataTags.TryGetContent<Dictionary<string, Recipe>>(RecipesTag, out var recipes))
+                if (!data.Variant.DataTags.TryGetValue<Dictionary<string, Recipe>>(RecipesTag, out var recipes))
                 {
                     variantCache[data.Variant] = null;
                     continue;
@@ -86,7 +86,7 @@ public class WetEngine() : TagEngine("wet")
 
                 if (result is { MinTime: >= 0, MaxTime: >= 0 } and not { MinTime: 0, MaxTime: 0 })
                 {
-                    if (!data.LocalTags.TryGetContent<double>(DurationTag, out var duration))
+                    if (!data.LocalTags.TryGetValue<double>(DurationTag, out var duration))
                     {
                         var time = result.MinTime > result.MaxTime ? result.MinTime : 
                             Utils.Lerp(_rand.NextDouble(), result.MinTime, result.MaxTime);

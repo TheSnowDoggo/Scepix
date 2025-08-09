@@ -31,6 +31,8 @@ public class LiquidEngine() : TagEngine("liquid")
 
     private const string HeadingTag = "liquid.heading";
 
+    private const string HeadingLeftTag = "liquid.heading.left";
+
     private const string AntiTag = "liquid.anti";
 
     private const string SpillTag = "liquid.spill";
@@ -55,7 +57,7 @@ public class LiquidEngine() : TagEngine("liquid")
             {
                 var density = data.Variant.DataTags.GetContentOrDefault<int>(DensityTag);
                 
-                var anti = data.Variant.DataTags.HasTag(AntiTag);
+                var anti = data.Variant.DataTags.Contains(AntiTag);
                 
                 var spill = data.Variant.DataTags.GetContentOrDefault(SpillTag, DefaultSpill);
                 
@@ -75,18 +77,24 @@ public class LiquidEngine() : TagEngine("liquid")
             if (Valid(pos + down, info, out _))
             {
                 space.Swap(pos, pos + down);
-                data.LocalTags.Remove(HeadingTag);
+                data.LocalTags.Remove(HeadingTag, HeadingLeftTag);
             }
             else
             {
-                if (!data.LocalTags.TryGetContent<bool>(HeadingTag, out var hDir) ||
-                    !Valid(pos + (hDir ? Vec2I.Left : Vec2I.Right), info, out _))
+                if (!data.LocalTags.Contains(HeadingTag) ||
+                    !Valid(pos + (data.LocalTags.Contains(HeadingLeftTag) ? Vec2I.Left : Vec2I.Right), info, out _))
                 {
-                    hDir = _rand.NextBool();
-                    data.LocalTags[HeadingTag] = hDir;
+                    if (_rand.NextBool())
+                    {
+                        data.LocalTags.Add(HeadingLeftTag);
+                    }
+                    else
+                    {
+                        data.LocalTags.Remove(HeadingLeftTag);
+                    }
                 }
 
-                var heading = hDir ? Vec2I.Left : Vec2I.Right;
+                var heading = data.LocalTags.Contains(HeadingLeftTag) ? Vec2I.Left : Vec2I.Right;
 
                 var next = pos + heading;
                 

@@ -51,7 +51,7 @@ public class PowderEngine() : TagEngine("powder")
             {
                 var density = data.Variant.DataTags.GetContentOrDefault<int>(DensityTag);
                 
-                var anti = data.Variant.DataTags.HasTag(AntiTag);
+                var anti = data.Variant.DataTags.Contains(AntiTag);
                 
                 var routing = data.Variant.DataTags.GetContentOrDefault<string>(RoutingTag, "rand");
 

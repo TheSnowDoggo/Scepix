@@ -46,10 +46,10 @@ public class TagMap : IEnumerable<KeyValuePair<string, object?>>,
     /// Adds a new tag and it's associated content.
     /// </summary>
     /// <param name="tag">The name of the tag.</param>
-    /// <param name="content">The content of the tag.</param>
-    public void Add(string tag, object content)
+    /// <param name="value">The content of the tag.</param>
+    public void Add(string tag, object value)
     {
-        _tags.Add(tag, content);
+        _tags.Add(tag, value);
     }
     
     /// <summary>
@@ -72,6 +72,24 @@ public class TagMap : IEnumerable<KeyValuePair<string, object?>>,
     }
 
     /// <summary>
+    /// Removes all the given tags.
+    /// </summary>
+    /// <param name="tags">The tags to remove.</param>
+    /// <returns>true if all tags were successfully removed; otherwise, false.</returns>
+    public bool Remove(params string[] tags)
+    {
+        var failed = false;
+        foreach (var tag in tags)
+        {
+            if (!Remove(tag))
+            {
+                failed = true;
+            }
+        }
+        return failed;
+    }
+
+    /// <summary>
     /// Clears all tags
     /// </summary>
     public void Clear()
@@ -84,19 +102,9 @@ public class TagMap : IEnumerable<KeyValuePair<string, object?>>,
     /// </summary>
     /// <param name="tag">The name of the tag to look for.</param>
     /// <returns>true if this contains the specified tag; otherwise, false</returns>
-    public bool HasTag(string tag)
+    public bool Contains(string tag)
     {
         return _tags.ContainsKey(tag);
-    }
-
-    /// <summary>
-    /// Returns whether the given tag has content.
-    /// </summary>
-    /// <param name="tag">The tag to check.</param>
-    /// <returns>true if the tag has content; otherwise, false.</returns>
-    public bool HasContent(string tag)
-    {
-        return this[tag] != null;
     }
 
     public T Get<T>(string tag)
@@ -108,40 +116,40 @@ public class TagMap : IEnumerable<KeyValuePair<string, object?>>,
     /// Gets the content associated with the specified tag.
     /// </summary>
     /// <param name="tag">The name of the tag.</param>
-    /// <param name="content">The content associated with the tag.</param>
+    /// <param name="value">The content associated with the tag.</param>
     /// <returns>true if the specified tag exists; otherwise, false</returns>
-    public bool TryGetContent(string tag, [NotNullWhen(true)] out object? content)
+    public bool TryGetValue(string tag, [NotNullWhen(true)] out object? value)
     {
-        return _tags.TryGetValue(tag, out content);
+        return _tags.TryGetValue(tag, out value);
     }
 
     /// <summary>
     /// Gets the content associated with the specified tag to unbox type T.
     /// </summary>
     /// <param name="tag">The name of the tag.</param>
-    /// <param name="content">The content associated with the tag.</param>
+    /// <param name="value">The content associated with the tag.</param>
     /// <typeparam name="T">The type to unbox the contents to.</typeparam>
     /// <returns>true if the specified tag exists; otherwise, false</returns>
-    public bool TryGetContent<T>(string tag, [MaybeNullWhen(false)] out T content)
+    public bool TryGetValue<T>(string tag, [MaybeNullWhen(false)] out T value)
     {
-        var res = TryGetContent(tag, out var obj);
-        content = obj == null ? default : (T)obj;
+        var res = TryGetValue(tag, out var obj);
+        value = obj == null ? default : (T)obj;
         return res;
     }
 
     public object? GetContentOrDefault(string tag)
     {
-        return TryGetContent(tag, out var obj) ? obj : null;
+        return TryGetValue(tag, out var obj) ? obj : null;
     }
     
     public T GetContentOrDefault<T>(string tag, T defaultValue)
     {
-        return TryGetContent<T>(tag, out var t) ? t : defaultValue;
+        return TryGetValue<T>(tag, out var t) ? t : defaultValue;
     }
     
     public T? GetContentOrDefault<T>(string tag)
     {
-        return TryGetContent<T>(tag, out var t) ? t : default;
+        return TryGetValue<T>(tag, out var t) ? t : default;
     }
 
     public IEnumerator<KeyValuePair<string, object?>> GetEnumerator() => _tags.GetEnumerator();
