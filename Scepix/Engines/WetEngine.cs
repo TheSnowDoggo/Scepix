@@ -89,7 +89,7 @@ public class WetEngine() : TagEngine("wet")
                     if (!data.LocalTags.TryGetValue<double>(DurationTag, out var duration))
                     {
                         var time = result.MinTime > result.MaxTime ? result.MinTime : 
-                            Utils.Lerp(_rand.NextDouble(), result.MinTime, result.MaxTime);
+                            MUtils.Lerp(_rand.NextDouble(), result.MinTime, result.MaxTime);
                         
                         data.LocalTags.Add(DurationTag, time);
                         continue;

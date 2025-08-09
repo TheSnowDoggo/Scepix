@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Avalonia.Controls;
+using Avalonia.Input;
 using Scepix.Collections;
 using Scepix.Update;
 using Scepix.Pixel;
@@ -84,6 +86,8 @@ public class PixelManager
         new GasEngine(),
         new WetEngine(),
     ];
+    
+    private readonly Queue<Vec2I> _fillQueue = new();
 
     public PixelManager()
     {
@@ -120,10 +124,79 @@ public class PixelManager
     {
         Console.WriteLine($"delta: {delta} real: {1.0 / _updater.UpdateTime:0.00} FPS: {_updater.FPS}");
 
+        while (_fillQueue.Count > 0)
+        {
+            var pixelPos = _fillQueue.Dequeue();
+            
+            foreach (var off in EnumerateCircle(5))
+            {
+                var pos = pixelPos + off;
+                if (_space.InRange(pos))
+                {
+                    _space[pos] = new PixelData(_space.Variants["sand"]);
+                }
+            }
+        }
+
         _tagEngineManager.Update(delta, _space);
        
         Render?.Invoke(this, new RenderEventArgs(_space, _space.Changes));
         
         _space.ClearChanges();
+    }
+
+    public void Space_OnPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (sender is not Control control)
+        {
+            return;
+        }
+        
+        var point = e.GetCurrentPoint(control);
+        
+        var rawPos = point.Position;
+        
+        var x = (int)Math.Round(rawPos.X / control.Bounds.Size.Width * _space.Width);
+        var y = (int)Math.Round(rawPos.Y / control.Bounds.Size.Height * _space.Height);
+        
+        var pixelPos = new Vec2I(x, y);
+        
+        _fillQueue.Enqueue(pixelPos);
+    }
+    
+    private static HashSet<Vec2I> EnumerateCircle(double radius)
+    {
+        var set = new HashSet<Vec2I>();
+        
+        var end = (int)Math.Round(radius);
+        for (var y = -end; y <= end; ++y)
+        {
+            var s = (int)Math.Round(MUtils.CircleSolveX(radius, y));
+
+            if (s == 0)
+            {
+                set.Add(new Vec2I(s, y));
+                continue;
+            }
+
+            for (var x = -s; x <= s; ++x)
+            {
+                set.Add(new Vec2I(x, y));
+            }
+        }
+
+        for (var x = -end; x <= end; ++x)
+        {
+            var s = (int)Math.Round(MUtils.CircleSolveY(radius, x));
+
+            set.Add(new Vec2I(x, s));
+            
+            if (s != 0)
+            {
+                set.Add(new Vec2I(x, -s));
+            }
+        }
+        
+        return set;
     }
 }

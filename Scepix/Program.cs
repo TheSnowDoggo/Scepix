@@ -2,6 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using Scepix.Collections;
+using Scepix.Types;
 
 namespace Scepix;
 
@@ -16,7 +19,7 @@ sealed class Program
         BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);
     }
-    
+
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()

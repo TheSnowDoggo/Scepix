@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using Avalonia.Input;
 using Scepix.Models;
 using SkiaSharp;
 using Avalonia.Media.Imaging;
@@ -9,6 +10,8 @@ namespace Scepix.ViewModels;
 public class PixelViewModel : ViewModelBase
 {
     private readonly PixelManager _manager;
+
+    private readonly SKPaint _paint = new SKPaint();
 
     private SKBitmap _skBitmap =  CreateBitmap(64, 64, SKColors.Black);
 
@@ -31,19 +34,14 @@ public class PixelViewModel : ViewModelBase
             resized = true;
         }
         
-        var paint = new SKPaint()
-        {
-            IsAntialias = false,
-        };
-
         using var canvas = new SKCanvas(_skBitmap);
         foreach (var pos in resized ? e.Grid.Enumerate() : e.Changes)
         { 
             var pixelData = e.Grid[pos];
 
-            paint.Color = pixelData == null ? SKColors.Black : pixelData.Variant.Color;
-
-            canvas.DrawPoint(pos.X, pos.Y, paint);
+            _paint.Color = pixelData == null ? SKColors.Black : pixelData.Variant.Color;
+            
+            canvas.DrawPoint(pos.X, pos.Y, _paint);
         }
 
         OnPropertyChanged(nameof(Bitmap));
@@ -69,5 +67,10 @@ public class PixelViewModel : ViewModelBase
         var data = skBitmap.Encode(SKEncodedImageFormat.Png, 100);
         using var stream = data.AsStream();
         return new Bitmap(stream);
+    }
+    
+    public void Space_OnPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        _manager.Space_OnPointerPressed(sender, e);
     }
 }
