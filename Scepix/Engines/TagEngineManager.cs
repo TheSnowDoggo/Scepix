@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Scepix.Collections;
@@ -10,6 +11,10 @@ public class TagEngineManager : IEnumerable<TagEngine>
 {
     private readonly Dictionary<string, TagEngine> _engines = new();
 
+    public int LazyFrameUpdateRate { get; set; } = 3;
+
+    private int _lazyFrameCounter = 1;
+    
     public void Add(TagEngine engine)
     {
         _engines.Add(engine.Tag, engine);
@@ -30,9 +35,14 @@ public class TagEngineManager : IEnumerable<TagEngine>
         }
     }
     
-    private static Dictionary<string, List<Coord>> QueryTagInfo(PixelSpace space)
+    private Dictionary<string, List<Coord>> QueryTagInfo(PixelSpace space)
     {
         var dict = new Dictionary<string, List<Coord>>();
+
+        if (_lazyFrameCounter >= LazyFrameUpdateRate)
+        {
+            _lazyFrameCounter = 0;
+        }
         
         foreach (var pos in space.Positions)
         {
@@ -40,9 +50,33 @@ public class TagEngineManager : IEnumerable<TagEngine>
             {
                 continue;
             }
+
+            switch (data.LazyCounter)
+            {
+                case 1:
+                {
+                    if (_lazyFrameCounter != 0)
+                    {
+                        continue;
+                    }
+
+                    break;
+                }
+                case 0:
+                    data.LazyCounter = 1;
+                    break;
+                default:
+                    --data.LazyCounter;
+                    break;
+            }
             
             foreach (var tag in data.Variant.EngineTags)
             {
+                if (!_engines.ContainsKey(tag))
+                {
+                    continue;
+                }
+                
                 if (dict.TryGetValue(tag, out var list))
                 {
                     list.Add((Coord)pos);
@@ -53,6 +87,8 @@ public class TagEngineManager : IEnumerable<TagEngine>
                 }
             }
         }
+        
+        ++_lazyFrameCounter;
 
         return dict;
     }

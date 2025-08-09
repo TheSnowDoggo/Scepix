@@ -91,6 +91,8 @@ public class PixelManager
 
     private bool _filling = false;
 
+    private string _fill = "sand";
+
     private Vec2I _mousePos = Vec2I.Zero;
 
     private double _statsTimer;
@@ -111,9 +113,9 @@ public class PixelManager
 
     private void Start()
     {
-        _space.Fill(p => _space.Make("sand"), 0, 0, 100, 30);
+        _space.Fill(p => _space.Make("sand"), 0, 60, 100, 30);
         
-        //_space.Fill(p => _space.Make("water"), 30, 0, 80, 40);
+        _space.Fill(p => _space.Make("water"), 30, 0, 80, 40);
         
         _updater.OnUpdate += Update;
 
@@ -141,9 +143,10 @@ public class PixelManager
             foreach (var off in EnumerateCircle(5))
             {
                 var pos = _mousePos + off;
+                
                 if (_space.InRange(pos))
                 {
-                    _space[pos] = _space.Make("sand");
+                    _space[pos] = _fill == string.Empty ? null : _space.Make(_fill);
                 }
             }
         }
@@ -162,8 +165,13 @@ public class PixelManager
             case MainWindow.PointerModify.Release:
                 _filling = false;
                 return;
-            case MainWindow.PointerModify.Press:
+            case MainWindow.PointerModify.Place:
                 _filling = true;
+                _fill = "sand";
+                break;
+            case MainWindow.PointerModify.Remove:
+                _filling = true;
+                _fill = string.Empty;
                 break;
             case MainWindow.PointerModify.Move:
                 if (!_filling)

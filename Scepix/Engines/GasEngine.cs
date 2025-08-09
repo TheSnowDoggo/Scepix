@@ -20,6 +20,8 @@ public class GasEngine() : TagEngine("gas")
     ];
 
     private readonly Random _rand = new();
+
+    private const byte AwakeTicks = 10;
     
     public override void Update(double delta, List<Coord> positions, PixelSpace space)
     {
@@ -27,7 +29,7 @@ public class GasEngine() : TagEngine("gas")
         
         foreach (Vec2I pos in positions)
         {
-            if (space[pos] == null || _rand.Next(10) != 0)
+            if (space[pos] is not {} data || _rand.Next(10) != 0)
             {
                 continue;
             }
@@ -40,6 +42,7 @@ public class GasEngine() : TagEngine("gas")
             }
             
             space.Swap(pos, next);
+            data.LazyCounter = AwakeTicks;
         }
     }
 }

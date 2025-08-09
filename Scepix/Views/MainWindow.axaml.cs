@@ -9,7 +9,8 @@ public partial class MainWindow : Window
 {
     public enum PointerModify
     {
-        Press,
+        Place,
+        Remove,
         Move,
         Release,
     }
@@ -31,7 +32,11 @@ public partial class MainWindow : Window
         
         if (e.Properties.IsLeftButtonPressed)
         {
-            MainWindowViewModel.Space_PointerModify(PointerModify.Press, control, e);
+            MainWindowViewModel.Space_PointerModify(PointerModify.Place, control, e);
+        }
+        else if (e.Properties.IsRightButtonPressed)
+        {
+            MainWindowViewModel.Space_PointerModify(PointerModify.Remove, control, e);
         }
     }
     

@@ -1,8 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
-using Scepix.Collections;
 using Scepix.Pixel;
 using Scepix.Types;
 
@@ -34,8 +31,10 @@ public class PowderEngine() : TagEngine("powder")
         public int Density { get; } = density;
         public Dictionary<PixelVariant, int> DensityCache { get; } = densityCache;
     }
-    
+
     private readonly Random _rand = new();
+    
+    private const byte AwakeTicks = 10;
 
     private const RoutingMode DefaultRouting = RoutingMode.Random;
     
@@ -84,6 +83,7 @@ public class PowderEngine() : TagEngine("powder")
             if (Valid(next, info))
             {
                 space.Swap(pos, next);
+                data.LazyCounter = AwakeTicks;
                 continue;
             }
 
@@ -116,6 +116,7 @@ public class PowderEngine() : TagEngine("powder")
             }
 
             space.Swap(pos, goLeft ? leftMove : rightMove);
+            data.LazyCounter = AwakeTicks;
         }
     }
     

@@ -13,6 +13,8 @@ public class PixelData
     public PixelVariant Variant { get; }
 
     public TagMap LocalTags { get; } = new TagMap();
+
+    public byte LazyCounter = 0;
     
     public bool IsEngine(string tag)
     {

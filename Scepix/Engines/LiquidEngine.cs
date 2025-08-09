@@ -27,6 +27,8 @@ public class LiquidEngine() : TagEngine("liquid")
     private readonly Random _rand = new();
     
     public const int DefaultSpill = 30;
+    
+    private const byte AwakeTicks = 10;
 
     private const string DensityTag = "density";
 
@@ -73,12 +75,13 @@ public class LiquidEngine() : TagEngine("liquid")
             
             var info = new ValidInfo(space, data.Variant, cache.Density, densityCache);
 
-            var next = cache.Down;
+            var next = pos + cache.Down;
             
             if (Valid(next, info, out _))
             {
                 space.Swap(pos, next);
                 data.LocalTags.Remove(HeadingTag, HeadingLeftTag);
+                data.LazyCounter = AwakeTicks;
                 continue;
             }
             
@@ -121,16 +124,18 @@ public class LiquidEngine() : TagEngine("liquid")
                 }
                     
                 space.Swap(pos, move);
+                data.LazyCounter = AwakeTicks;
                 moved = true;
                 break;
             }
-                
+
             if (moved)
             {
                 continue;
-            } 
+            }
             
             space.Swap(pos, next);
+            data.LazyCounter = AwakeTicks;
         }
     }
     
