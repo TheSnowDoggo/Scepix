@@ -6,16 +6,10 @@ namespace Scepix.Types;
 /// <summary>
 /// Represents a 2D integer point.
 /// </summary>
-public struct Vec2I : IEquatable<Vec2I>
+public struct Vec2I(int x, int y) : IEquatable<Vec2I>
 {
-    public int X;
-    public int Y;
-
-    public Vec2I(int x, int y)
-    {
-        X = x;
-        Y = y;
-    }
+    public int X = x;
+    public int Y = y;
     
     public static Vec2I Zero      => new Vec2I(+0, +0);
     public static Vec2I Left      => new Vec2I(-1, +0);

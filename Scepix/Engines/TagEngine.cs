@@ -14,5 +14,5 @@ public abstract class TagEngine
     
     public string Tag { get; }
     
-    public abstract void Update(double delta, IReadOnlyList<Vec2I> positions, PixelSpace space);
+    public abstract void Update(double delta, List<Coord> positions, PixelSpace space);
 }

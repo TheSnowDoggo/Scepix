@@ -21,9 +21,11 @@ public class GasEngine() : TagEngine("gas")
 
     private readonly Random _rand = new();
     
-    public override void Update(double delta, IReadOnlyList<Vec2I> positions, PixelSpace space)
+    public override void Update(double delta, List<Coord> positions, PixelSpace space)
     {
-        foreach (var pos in positions.Shuffle())
+        positions.Shuffle();
+        
+        foreach (Vec2I pos in positions)
         {
             if (space[pos] == null || _rand.Next(10) != 0)
             {

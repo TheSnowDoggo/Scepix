@@ -10,9 +10,9 @@ public class DecayEngine() : TagEngine("decay")
 {
     private readonly Random _rand = new();
 
-    public override void Update(double delta, IReadOnlyList<Vec2I> positions, PixelSpace space)
+    public override void Update(double delta, List<Coord> positions, PixelSpace space)
     {
-        foreach (var pos in positions)
+        foreach (Vec2I pos in positions)
         {
             var data = space[pos];
             

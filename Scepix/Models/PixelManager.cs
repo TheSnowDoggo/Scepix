@@ -26,11 +26,10 @@ public class PixelManager
                     { "wet.recipes", new Dictionary<string, WetEngine.Recipe>
                         {
                             { "water", new WetEngine.Recipe("wetsand") { MinTime = 5, MaxTime = 20 } },
-                            { "wetsand", new WetEngine.Recipe("wetsand") { MinTime = 20, MaxTime = 120 } }
                         }
                     },
                     { "wet.axis", WetEngine.AxisType.AllAxis },
-                    { "*.density", 10 }
+                    { "density", 10 },
                 }
             },
             new PixelVariant("wetsand")
@@ -39,7 +38,7 @@ public class PixelManager
                 EngineTags = ["powder"],
                 DataTags = new TagMap()
                 {
-                    { "*.density", 10 }
+                    { "density", 10 }
                 }
             },
             new PixelVariant("gravel")
@@ -53,7 +52,7 @@ public class PixelManager
                 EngineTags = ["liquid"],
                 DataTags = new TagMap()
                 {
-                    { "*.density", 0 },
+                    { "density", 0 },
                 }
             },
             new PixelVariant("oil")
@@ -62,16 +61,17 @@ public class PixelManager
                 EngineTags = ["liquid"],
                 DataTags = new TagMap()
                 {
-                    { "*.density", 3 },
+                    { "density", 3 },
                 } 
             },
             new PixelVariant("co2")
             {
                 Color = SKColors.LightGray,
-                EngineTags = ["gas", "liquid"],
+                EngineTags = ["liquid", "gas"],
                 DataTags = new TagMap()
                 {
                     "liquid.anti",
+                    { "density", -3 }
                 }
             }
         ]
@@ -101,17 +101,17 @@ public class PixelManager
 
     private void Start()
     {
-        _space.Fill(p => new PixelData(_space.Variants["sand"]), 30, 50, 40, 20);
+        _space.Fill(p => new PixelData(_space.Variants["sand"]), 0, 0, 100, 30);
         
         _space.Fill(p => new PixelData(_space.Variants["water"]), 30, 0, 80, 40);
         
-        //_space.Fill(p => new PixelData(_space.Variants["co2"]), 80, 0, 60, 30);
+        //_space.Fill(p => new PixelData(_space.Variants["co2"]), 80, 40, 60, 30);
         
         //_space.Fill(p => new PixelData(_space.Variants["oil"]), 160, 50, 50, 20);
         
         _updater.OnUpdate += Update;
 
-        _updater.FrameCap = 20;
+        _updater.FrameCap = 60;
        
         _updater.Start();
     }

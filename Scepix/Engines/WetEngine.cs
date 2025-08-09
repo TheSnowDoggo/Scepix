@@ -25,11 +25,11 @@ public class WetEngine() : TagEngine("wet")
         public double MaxTime { get; init; } = 0;
     }
 
-    private class Cache(Dictionary<string, Recipe> recipes, IEnumerable<Vec2I> neighbors)
+    private class VariantCache(Dictionary<string, Recipe> recipes, IReadOnlyList<Vec2I> neighbors)
     {
         public Dictionary<string, Recipe> Recipes { get; } = recipes;
 
-        public IEnumerable<Vec2I> Neighbors { get; } = neighbors;
+        public IReadOnlyList<Vec2I> Neighbors { get; } = neighbors;
     }
 
     private readonly Random _rand = new();
@@ -40,11 +40,11 @@ public class WetEngine() : TagEngine("wet")
 
     private const string DurationTag = "wet.duration";
     
-    public override void Update(double delta, IReadOnlyList<Vec2I> positions, PixelSpace space)
+    public override void Update(double delta, List<Coord> positions, PixelSpace space)
     {
-        var variantCache = new Dictionary<PixelVariant, Cache?>();
+        var variantCache = new Dictionary<PixelVariant, VariantCache?>();
         
-        foreach (var pos in positions)
+        foreach (Vec2I pos in positions)
         {
             if (space[pos] is not {} data || (variantCache.TryGetValue(data.Variant, out var cache) && cache == null))
             {
@@ -63,11 +63,11 @@ public class WetEngine() : TagEngine("wet")
                 {
                     AxisType.StarAxis => Vec2I.StarAxis,
                     AxisType.CrossAxis => Vec2I.CrossAxis,
-                    AxisType.AllAxis => Vec2I.StarAxis.Concat(Vec2I.CrossAxis),
+                    AxisType.AllAxis => Vec2I.StarAxis.Concat(Vec2I.CrossAxis).ToList(),
                     _ => throw new ArgumentException("Unknown axis type")
                 };
                 
-                cache = new Cache(recipes, neighbors);
+                cache = new VariantCache(recipes, neighbors);
                 variantCache[data.Variant] = cache;
             }
             

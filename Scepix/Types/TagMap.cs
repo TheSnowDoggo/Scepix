@@ -134,14 +134,14 @@ public class TagMap : IEnumerable<KeyValuePair<string, object?>>,
         return TryGetContent(tag, out var obj) ? obj : null;
     }
     
-    public T? GetContentOrDefault<T>(string tag, T? defaultValue)
+    public T GetContentOrDefault<T>(string tag, T defaultValue)
     {
         return TryGetContent<T>(tag, out var t) ? t : defaultValue;
     }
     
     public T? GetContentOrDefault<T>(string tag)
     {
-        return GetContentOrDefault<T>(tag, default);
+        return TryGetContent<T>(tag, out var t) ? t : default;
     }
 
     public IEnumerator<KeyValuePair<string, object?>> GetEnumerator() => _tags.GetEnumerator();

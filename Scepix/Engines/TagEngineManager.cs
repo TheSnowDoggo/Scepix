@@ -26,13 +26,13 @@ public class TagEngineManager : IEnumerable<TagEngine>
                 continue;
             }
             
-            engine.Update(delta, list.AsReadOnly(), grid);
+            engine.Update(delta, list, grid);
         }
     }
     
-    private static Dictionary<string, List<Vec2I>> QueryTagInfo(PixelSpace grid)
+    private static Dictionary<string, List<Coord>> QueryTagInfo(PixelSpace grid)
     {
-        var dict = new Dictionary<string, List<Vec2I>>();
+        var dict = new Dictionary<string, List<Coord>>();
         
         foreach (var pos in grid.EnumerateFilled())
         {
@@ -45,11 +45,11 @@ public class TagEngineManager : IEnumerable<TagEngine>
             {
                 if (dict.TryGetValue(tag, out var list))
                 {
-                    list.Add(pos);
+                    list.Add((Coord)pos);
                 }
                 else
                 {
-                    dict[tag] = [ pos ];
+                    dict[tag] = [ (Coord)pos ];
                 }
             }
         }

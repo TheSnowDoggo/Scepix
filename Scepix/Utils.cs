@@ -514,9 +514,18 @@ public static class Utils
         return EnumerateRect(0, 0, width, height, rowMajor);
     }
 
-    public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source)
+    public static void Shuffle<T>(this List<T> source)
     {
-        return source.OrderBy(x => _rand.NextDouble());
+        for (var i = source.Count - 1; i > 0; --i)
+        {
+            var r = _rand.Next(i);
+            if (r == i)
+            {
+                continue;
+            }
+            
+            source.Swap(i, r);
+        }
     }
     
     #endregion
