@@ -15,12 +15,28 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <Image Source="{Binding PixelViewModel.Bitmap}"
-           RenderOptions.BitmapInterpolationMode="None"
-           PointerPressed="Space_OnPointerPressed"
-           PointerMoved="Space_OnPointerMoved"
-           PointerReleased="Space_OnPointerReleased"
-           >
-    </Image>
-
+    <Grid RowDefinitions="*, Auto" ColumnDefinitions="*">
+        <Image Grid.Row="0" 
+               Source="{Binding PixelViewModel.Bitmap}"
+               RenderOptions.BitmapInterpolationMode="None"
+               PointerPressed="Space_OnPointerPressed"
+               PointerMoved="Space_OnPointerMoved"
+               PointerReleased="Space_OnPointerReleased"
+        >
+        </Image>
+        <ListBox Grid.Row="1" 
+                 ItemsSource="{Binding PixelViewModel.Variants}"
+                 SelectedItem="{Binding PixelViewModel.SelectedVariant}">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal"></StackPanel>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}"></TextBlock>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
 </Window>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Scepix.Types;
 
@@ -36,6 +37,8 @@ public struct Vec2I(int x, int y) : IEquatable<Vec2I>
         Vec2I.DownRight,
         Vec2I.DownLeft,
     ];
+
+    public static IReadOnlyList<Vec2I> AllAxis { get; } = StarAxis.Concat(CrossAxis).ToList();
 
     public static bool operator ==(Vec2I v1, Vec2I v2) => v1.Equals(v2);
     

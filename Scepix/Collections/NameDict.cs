@@ -31,6 +31,11 @@ public class NameDict<T> : IEnumerable<T> where T : INameIdentifiable
     /// Gets a collection containing all the items.
     /// </summary>
     public IEnumerable<T> Items => _dict.Values;
+    
+    /// <summary>
+    /// Gets a collection containin all the names of the items.
+    /// </summary>
+    public IEnumerable<string> Names => _dict.Keys;
 
     /// <summary>
     /// Gets the number of items.

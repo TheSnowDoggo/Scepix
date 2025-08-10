@@ -36,9 +36,9 @@ public class LiquidEngine() : TagEngine("liquid")
 
     private const string HeadingLeftTag = "liquid.heading.left";
 
-    private const string AntiTag = "liquid.anti";
+    public const string AntiTag = "liquid.anti";
 
-    private const string SpillTag = "liquid.spill";
+    public const string SpillTag = "liquid.spill";
 
     public override void Update(double delta, List<Coord> positions, PixelSpace space)
     {
@@ -68,11 +68,6 @@ public class LiquidEngine() : TagEngine("liquid")
                 variantCache[data.Variant] = cache;
             }
 
-            if (cache.Anti ? pos.Y == 0 : pos.Y == space.Height - 1)
-            {
-                continue;
-            }
-            
             var info = new ValidInfo(space, data.Variant, cache.Density, densityCache);
 
             var next = pos + cache.Down;
@@ -108,11 +103,11 @@ public class LiquidEngine() : TagEngine("liquid")
             }
                 
             var moved = false;
-            
+
             for (var i = 1; i < cache.Spill; ++i)
             {
                 var move = next + cache.Down + heading * i;
-                    
+
                 if (!Valid(move, info, out var p))
                 {
                     if (p != null && p.Variant != data.Variant)

@@ -1,15 +1,18 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Scepix.Models;
 using SkiaSharp;
 using Avalonia.Media.Imaging;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Scepix.Views;
 
 namespace Scepix.ViewModels;
 
-public class PixelViewModel : ViewModelBase
+public partial class PixelViewModel : ViewModelBase
 {
     private readonly PixelManager _manager;
 
@@ -24,6 +27,25 @@ public class PixelViewModel : ViewModelBase
     }
 
     public Bitmap Bitmap => ToBitmap(_skBitmap);
+
+    public IEnumerable<string> Variants => _manager.Variants;
+
+    private string _selectedVariant;
+
+    public string SelectedVariant
+    {
+        get => _selectedVariant;
+        set
+        {
+            _selectedVariant = value;
+            _manager.SelectedVariant = value;
+        }
+    }
+    
+    [RelayCommand]
+    private void OnSelect()
+    {
+    }
 
     private void Manager_OnRender(object? sender, PixelManager.RenderEventArgs e)
     {

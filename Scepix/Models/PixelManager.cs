@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Scepix.Collections;
@@ -17,26 +18,36 @@ public class PixelManager
 {
     private readonly Updater _updater = new();
 
-    private readonly PixelSpace _space = new(220, 100)
+    private readonly PixelSpace _space = new(400, 200)
     {
         Variants = 
         [
             new PixelVariant("sand")
             {
                 Color = SKColors.Yellow, 
-                EngineTags = ["powder", "wet"],
+                EngineTags = ["powder", "recipe"],
                 DataTags = new TagMap()
                 {
-                    { "wet.recipes", new Dictionary<string, WetEngine.Recipe>
+                    { "recipe.recipes", new Dictionary<string, RecipeEngine.Recipe>
                         {
-                            { "water", new WetEngine.Recipe("wetsand") { MinTime = 5, MaxTime = 20 } },
+                            { "water", new RecipeEngine.Recipe("wetsand") { MinTime = 5, MaxTime = 20 } },
+                            { "saltwater", new RecipeEngine.Recipe("silt") { MinTime = 5, MaxTime = 20 } },
                         }
                     },
-                    { "wet.axis", WetEngine.AxisType.AllAxis },
+                    { "recipe.axis", RecipeEngine.AxisType.AllAxis },
                     { "density", 10 },
                 }
             },
             new PixelVariant("wetsand")
+            {
+                Color = SKColors.SandyBrown,
+                EngineTags = ["powder"],
+                DataTags = new TagMap()
+                {
+                    { "density", 10 }
+                }
+            },
+            new PixelVariant("silt")
             {
                 Color = SKColors.BurlyWood,
                 EngineTags = ["powder"],
@@ -49,14 +60,41 @@ public class PixelManager
             {
                 Color = SKColors.Gray, 
                 EngineTags = ["powder"],
+                DataTags = new TagMap()
+                {
+                    { "density", 10 }
+                }
+            },
+            new PixelVariant("salt")
+            {
+                Color = SKColors.GhostWhite,
+                EngineTags = ["powder", "recipe"],
+                DataTags = new TagMap()
+                {
+                    { "recipe.recipes", new Dictionary<string, RecipeEngine.Recipe>
+                        {
+                            { "water", new RecipeEngine.Recipe("saltwater") { MinTime = 1, MaxTime = 3 } }
+                        }
+                    },
+                    { "density", 10 },
+                },
             },
             new PixelVariant("water")
             {
-                Color = SKColors.RoyalBlue, 
+                Color = SKColors.DodgerBlue, 
                 EngineTags = ["liquid"],
                 DataTags = new TagMap()
                 {
                     { "density", 0 },
+                }
+            },
+            new PixelVariant("saltwater")
+            {
+                Color = SKColors.RoyalBlue,
+                EngineTags = ["liquid"],
+                DataTags = new TagMap()
+                {
+                    { "density", 1 },
                 }
             },
             new PixelVariant("oil")
@@ -83,15 +121,16 @@ public class PixelManager
     
     private readonly TagEngineManager _tagEngineManager =
     [
+        new FlammableEngine(),
         new PowderEngine(),
         new LiquidEngine(),
         new GasEngine(),
-        new WetEngine(),
+        new RecipeEngine(),
     ];
 
     private bool _filling = false;
 
-    private string _fill = "sand";
+    private string? _fill = null;
 
     private Vec2I _mousePos = Vec2I.Zero;
 
@@ -101,6 +140,10 @@ public class PixelManager
     {
         Start();
     }
+
+    public IEnumerable<string> Variants => _space.Variants.Names;
+
+    public string? SelectedVariant { get; set; } = null;
     
     public class RenderEventArgs(GridView<PixelData?> grid, IEnumerable<Vec2I> changes) : EventArgs
     {
@@ -113,9 +156,9 @@ public class PixelManager
 
     private void Start()
     {
-        _space.Fill(p => _space.Make("sand"), 0, 60, 100, 30);
+        //_space.Fill(p => _space.Make("sand"), 0, 60, 100, 30);
         
-        _space.Fill(p => _space.Make("water"), 30, 0, 80, 40);
+        //_space.Fill(p => _space.Make("water"), 30, 0, 80, 40);
 
         _tagEngineManager.LazyFrameUpdateRate = 5;
         
@@ -125,8 +168,6 @@ public class PixelManager
        
         _updater.Start();
     }
-
-    private readonly Stopwatch sw = new();
 
     private void Update(double delta)
     {
@@ -140,16 +181,11 @@ public class PixelManager
             _statsTimer = 0.5;
         }
 
-        if (_filling)
+        if (_filling && _fill != null)
         {
-            foreach (var off in EnumerateCircle(5))
+            foreach (var pos in EnumerateCircle(5).Select(off => _mousePos + off).Where(pos => _space.InRange(pos)))
             {
-                var pos = _mousePos + off;
-                
-                if (_space.InRange(pos))
-                {
-                    _space[pos] = _fill == string.Empty ? null : _space.Make(_fill);
-                }
+                _space[pos] = _fill == string.Empty ? null : _space.Make(_fill);
             }
         }
 
@@ -169,7 +205,7 @@ public class PixelManager
                 return;
             case MainWindow.PointerModify.Place:
                 _filling = true;
-                _fill = "sand";
+                _fill = SelectedVariant;
                 break;
             case MainWindow.PointerModify.Remove:
                 _filling = true;

@@ -7,7 +7,7 @@ using Scepix.Types;
 
 namespace Scepix.Engines;
 
-public class WetEngine() : TagEngine("wet")
+public class RecipeEngine() : TagEngine("recipe")
 {
     public enum AxisType
     {
@@ -23,6 +23,8 @@ public class WetEngine() : TagEngine("wet")
         public double MinTime { get; init; } = 0;
 
         public double MaxTime { get; init; } = 0;
+
+        public bool Remove { get; set; } = true;
     }
 
     private class VariantCache(Dictionary<string, Recipe> recipes, IReadOnlyList<Vec2I> neighbors)
@@ -34,11 +36,13 @@ public class WetEngine() : TagEngine("wet")
 
     private readonly Random _rand = new();
     
-    private const string RecipesTag = "wet.recipes";
+    private const byte AwakeTicks = 10;
+    
+    private const string RecipesTag = "recipe.recipes";
 
-    private const string AxisTag = "wet.axis";
+    private const string AxisTag = "recipe.axis";
 
-    private const string DurationTag = "wet.duration";
+    private const string DurationTag = "recipe.duration";
     
     public override void Update(double delta, List<Coord> positions, PixelSpace space)
     {
@@ -63,7 +67,7 @@ public class WetEngine() : TagEngine("wet")
                 {
                     AxisType.StarAxis => Vec2I.StarAxis,
                     AxisType.CrossAxis => Vec2I.CrossAxis,
-                    AxisType.AllAxis => Vec2I.StarAxis.Concat(Vec2I.CrossAxis).ToList(),
+                    AxisType.AllAxis => Vec2I.AllAxis,
                     _ => throw new ArgumentException("Unknown axis type")
                 };
                 
@@ -73,7 +77,9 @@ public class WetEngine() : TagEngine("wet")
             
             foreach (var axis in cache.Neighbors)
             {
-                if (!space.TryGet(pos + axis, out var p) || p == null || 
+                var next = pos + axis;
+                
+                if (!space.TryGet(next, out var p) || p == null || 
                     !cache.Recipes.TryGetValue(p.Variant.Name, out var result))
                 {
                     continue;
@@ -92,12 +98,14 @@ public class WetEngine() : TagEngine("wet")
                             MUtils.Lerp(_rand.NextDouble(), result.MinTime, result.MaxTime);
                         
                         data.LocalTags.Add(DurationTag, time);
+                        data.LazyCounter = AwakeTicks;
                         continue;
                     }
 
                     if (duration > 0)
                     {
                         data.LocalTags[DurationTag] = duration - delta;
+                        data.LazyCounter = AwakeTicks;
                         continue;
                     }
 
@@ -105,6 +113,11 @@ public class WetEngine() : TagEngine("wet")
                 }
                 
                 space[pos] = new PixelData(variant);
+                
+                if (result.Remove)
+                {
+                    space[next] = null;
+                }
 
                 break;
             }
