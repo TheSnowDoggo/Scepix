@@ -104,6 +104,7 @@ public class PixelManager
                 DataTags = new TagMap()
                 {
                     { "density", 3 },
+                    { "flame.duration", 5.0f }
                 } 
             },
             new PixelVariant("co2")
@@ -115,13 +116,22 @@ public class PixelManager
                     "liquid.anti",
                     { "density", -3 }
                 }
+            },
+            new PixelVariant("fire")
+            {
+                Color = SKColors.Orange,
+                EngineTags = ["powder", "flame"],
+                DataTags = new TagMap()
+                {
+                    { "density", -1 }
+                }
             }
         ]
     };
     
     private readonly TagEngineManager _tagEngineManager =
     [
-        new FlammableEngine(),
+        new FlameEngine(),
         new PowderEngine(),
         new LiquidEngine(),
         new GasEngine(),
