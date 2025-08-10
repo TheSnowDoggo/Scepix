@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Scepix.Collections;
 using Scepix.Pixel;
 using Scepix.Types;
@@ -11,10 +12,14 @@ public class TagEngineManager : IEnumerable<TagEngine>
 {
     private readonly Dictionary<string, TagEngine> _engines = new();
 
-    public int LazyFrameUpdateRate { get; set; } = 3;
+    private readonly Random _rand = new();
 
     private int _lazyFrameCounter = 1;
-    
+
+    public int LazyFrameUpdateRate { get; set; } = 1;
+
+    public byte InitialAwakeTime { get; set; } = 60;
+
     public void Add(TagEngine engine)
     {
         _engines.Add(engine.Tag, engine);
@@ -39,7 +44,7 @@ public class TagEngineManager : IEnumerable<TagEngine>
     {
         var dict = new Dictionary<string, List<Coord>>();
 
-        if (_lazyFrameCounter >= LazyFrameUpdateRate)
+        if (LazyFrameUpdateRate > 1 && _lazyFrameCounter >= LazyFrameUpdateRate)
         {
             _lazyFrameCounter = 0;
         }
@@ -51,23 +56,27 @@ public class TagEngineManager : IEnumerable<TagEngine>
                 continue;
             }
 
-            switch (data.LazyCounter)
+            if (LazyFrameUpdateRate > 1)
             {
-                case 1:
+                switch (data.LazyCounter)
                 {
-                    if (_lazyFrameCounter != 0)
+                    case 1:
                     {
-                        continue;
-                    }
+                        if (data.LazyRank != _lazyFrameCounter)
+                        {
+                            continue;
+                        }
 
-                    break;
+                        break;
+                    }
+                    case 0:
+                        data.LazyCounter = InitialAwakeTime > 0 ? InitialAwakeTime : (byte)1;
+                        data.LazyRank = (byte)_rand.Next(LazyFrameUpdateRate);
+                        break;
+                    default:
+                        --data.LazyCounter;
+                        break;
                 }
-                case 0:
-                    data.LazyCounter = 1;
-                    break;
-                default:
-                    --data.LazyCounter;
-                    break;
             }
             
             foreach (var tag in data.Variant.EngineTags)
@@ -87,8 +96,11 @@ public class TagEngineManager : IEnumerable<TagEngine>
                 }
             }
         }
-        
-        ++_lazyFrameCounter;
+
+        if (LazyFrameUpdateRate > 1)
+        {
+            ++_lazyFrameCounter;
+        }
 
         return dict;
     }

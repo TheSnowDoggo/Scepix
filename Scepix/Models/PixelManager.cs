@@ -116,6 +116,8 @@ public class PixelManager
         _space.Fill(p => _space.Make("sand"), 0, 60, 100, 30);
         
         _space.Fill(p => _space.Make("water"), 30, 0, 80, 40);
+
+        _tagEngineManager.LazyFrameUpdateRate = 5;
         
         _updater.OnUpdate += Update;
 

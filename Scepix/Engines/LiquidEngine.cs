@@ -28,7 +28,7 @@ public class LiquidEngine() : TagEngine("liquid")
     
     public const int DefaultSpill = 30;
     
-    private const byte AwakeTicks = 10;
+    private const byte AwakeTicks = byte.MaxValue;
 
     private const string DensityTag = "density";
 

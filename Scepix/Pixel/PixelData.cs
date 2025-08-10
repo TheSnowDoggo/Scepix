@@ -15,6 +15,8 @@ public class PixelData
     public TagMap LocalTags { get; } = new TagMap();
 
     public byte LazyCounter = 0;
+
+    public byte LazyRank = 0;
     
     public bool IsEngine(string tag)
     {
