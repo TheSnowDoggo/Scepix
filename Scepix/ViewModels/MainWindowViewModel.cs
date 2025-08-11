@@ -18,4 +18,9 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         PixelViewModel.Space_PointerModify(modify, sender, e);
     }
+    
+    public void Space_OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
+    {
+        PixelViewModel.Space_OnPointerWheelChanged(sender, e);
+    }
 }

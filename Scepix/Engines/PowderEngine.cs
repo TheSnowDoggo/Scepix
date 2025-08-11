@@ -24,12 +24,12 @@ public class PowderEngine() : TagEngine("powder")
         public Vec2I DownRight { get; } = anti ? Vec2I.UpRight : Vec2I.DownRight;
     }
     
-    private readonly struct ValidInfo(PixelSpace space, PixelVariant variant, int density, Dictionary<PixelVariant, int> densityCache)
+    private readonly struct ValidInfo(PixelSpace space, PixelVariant variant, int density, Dictionary<PixelVariant, int?> densityCache)
     {
         public PixelSpace Space { get; } = space;
         public PixelVariant Variant { get; } = variant;
         public int Density { get; } = density;
-        public Dictionary<PixelVariant, int> DensityCache { get; } = densityCache;
+        public Dictionary<PixelVariant, int?> DensityCache { get; } = densityCache;
     }
 
     private readonly Random _rand = new();
@@ -48,7 +48,7 @@ public class PowderEngine() : TagEngine("powder")
     {
         var variantCache = new Dictionary<PixelVariant, VariantCache>();
 
-        var densityCache = new Dictionary<PixelVariant, int>();
+        var densityCache = new Dictionary<PixelVariant, int?>();
         
         positions.Shuffle();
         
@@ -136,15 +136,18 @@ public class PowderEngine() : TagEngine("powder")
         {
             return false;
         }
-        
-        if (info.DensityCache.TryGetValue(p.Variant, out var density))
+
+        if (!info.DensityCache.TryGetValue(p.Variant, out var density))
         {
-            return density < info.Density;
+            density = p.Variant.DataTags.GetContentOrDefault<int?>(DensityTag, null);
+            info.DensityCache[p.Variant] = density;
         }
         
-        density = p.Variant.DataTags.GetContentOrDefault<int>(DensityTag);
-        info.DensityCache[p.Variant] = density;
-
+        if (density == null)
+        {
+            return false;
+        }
+        
         return density < info.Density;
     }
 }

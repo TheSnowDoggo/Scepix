@@ -16,12 +16,12 @@ public class LiquidEngine() : TagEngine("liquid")
         public Vec2I Down { get; } = anti ? Vec2I.Up : Vec2I.Down;
     }
 
-    private readonly struct ValidInfo(PixelSpace space, PixelVariant variant, int density, Dictionary<PixelVariant, int> densityCache)
+    private readonly struct ValidInfo(PixelSpace space, PixelVariant variant, int density, Dictionary<PixelVariant, int?> densityCache)
     {
         public PixelSpace Space { get; } = space;
         public PixelVariant Variant { get; } = variant;
         public int Density { get; } = density;
-        public Dictionary<PixelVariant, int> DensityCache { get; } = densityCache;
+        public Dictionary<PixelVariant, int?> DensityCache { get; } = densityCache;
     }
     
     private readonly Random _rand = new();
@@ -44,7 +44,7 @@ public class LiquidEngine() : TagEngine("liquid")
     {
         var variantCache = new Dictionary<PixelVariant, VariantCache>();
 
-        var densityCache = new Dictionary<PixelVariant, int>();
+        var densityCache = new Dictionary<PixelVariant, int?>();
         
         positions.Shuffle();
         positions.Sort((a, b) => b.Y - a.Y);
@@ -151,13 +151,16 @@ public class LiquidEngine() : TagEngine("liquid")
             return false;
         }
 
-        if (info.DensityCache.TryGetValue(p.Variant, out var density))
+        if (!info.DensityCache.TryGetValue(p.Variant, out var density))
         {
-            return density < info.Density;
+            density = p.Variant.DataTags.GetContentOrDefault<int?>(DensityTag, null);
+            info.DensityCache[p.Variant] = density;
         }
         
-        density = p.Variant.DataTags.GetContentOrDefault<int>(DensityTag);
-        info.DensityCache[p.Variant] = density;
+        if (density == null)
+        {
+            return false;
+        }
 
         return density < info.Density;
     }

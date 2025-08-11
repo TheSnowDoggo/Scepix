@@ -22,6 +22,29 @@ public class PixelManager
     {
         Variants = 
         [
+            new PixelVariant("iron")
+            {
+              Color = SKColors.LightSlateGray, 
+              EngineTags = ["recipe"],
+              DataTags = new TagMap()
+              {
+                  { "recipe.recipes", new Dictionary<string, RecipeEngine.Recipe>
+                      {
+                          { "water", new RecipeEngine.Recipe("rust") { MinTime = 30, MaxTime = 180, Remove = false } },
+                          { "saltwater", new RecipeEngine.Recipe("rust") { MinTime = 15, MaxTime = 130, Remove = false }}
+                      }
+                  },
+              },
+            },
+            new PixelVariant("rust")
+            {
+                Color = SKColors.SaddleBrown,
+                EngineTags = ["powder"],
+                DataTags = new TagMap()
+                {
+                    { "density", 10 },
+                }
+            },
             new PixelVariant("sand")
             {
                 Color = SKColors.Yellow, 
@@ -30,7 +53,7 @@ public class PixelManager
                 {
                     { "recipe.recipes", new Dictionary<string, RecipeEngine.Recipe>
                         {
-                            { "water", new RecipeEngine.Recipe("wetsand") { MinTime = 5, MaxTime = 20 } },
+                            { "water", new RecipeEngine.Recipe("wetsand") { MinTime = 5, MaxTime = 20, Remove = false } },
                             { "saltwater", new RecipeEngine.Recipe("silt") { MinTime = 5, MaxTime = 20 } },
                         }
                     },
@@ -73,7 +96,7 @@ public class PixelManager
                 {
                     { "recipe.recipes", new Dictionary<string, RecipeEngine.Recipe>
                         {
-                            { "water", new RecipeEngine.Recipe("saltwater") { MinTime = 1, MaxTime = 3 } }
+                            { "water", new RecipeEngine.Recipe("saltwater") { MinTime = 0, MaxTime = 1 } }
                         }
                     },
                     { "density", 10 },
@@ -146,6 +169,8 @@ public class PixelManager
 
     private double _statsTimer;
 
+    private float _brushSize = 5.0f;
+
     public PixelManager()
     {
         Start();
@@ -193,9 +218,16 @@ public class PixelManager
 
         if (_filling && _fill != null)
         {
-            foreach (var pos in EnumerateCircle(5).Select(off => _mousePos + off).Where(pos => _space.InRange(pos)))
+            foreach (var pos in EnumerateCircle((int)MathF.Round(_brushSize)).Select(off => _mousePos + off).Where(pos => _space.InRange(pos)))
             {
-                _space[pos] = _fill == string.Empty ? null : _space.Make(_fill);
+                if (_fill == string.Empty)
+                {
+                    _space[pos] = null;
+                }
+                else if (_space[pos] == null)
+                {
+                    _space[pos] = _space.Make(_fill);
+                }
             }
         }
 
@@ -239,6 +271,18 @@ public class PixelManager
         var y = (int)Math.Round(rawPos.Y / sender.Bounds.Size.Height * _space.Height);
         
         _mousePos = new Vec2I(x, y);
+    }
+    
+    public void Space_OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
+    {
+        if (sender is not Control control)
+        {
+            return;
+        }
+
+        _brushSize = Math.Clamp(_brushSize + (float)e.Delta.Y, 1.0f, 50.0f);
+
+        Console.WriteLine($"Brush changed to {_brushSize}");
     }
     
     private static HashSet<Vec2I> EnumerateCircle(double radius)

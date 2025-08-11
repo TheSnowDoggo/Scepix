@@ -22,6 +22,7 @@
                PointerPressed="Space_OnPointerPressed"
                PointerMoved="Space_OnPointerMoved"
                PointerReleased="Space_OnPointerReleased"
+               PointerWheelChanged="Space_OnPointerWheelChanged"
         >
         </Image>
         <ListBox Grid.Row="1" 

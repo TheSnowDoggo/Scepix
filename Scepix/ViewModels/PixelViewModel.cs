@@ -97,4 +97,9 @@ public partial class PixelViewModel : ViewModelBase
     {
         _manager.Space_PointerModify(modify, sender, e);
     }
+    
+    public void Space_OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
+    {
+        _manager.Space_OnPointerWheelChanged(sender, e);
+    }
 }

@@ -13,6 +13,7 @@ public partial class MainWindow : Window
         Remove,
         Move,
         Release,
+        Scroll,
     }
     
     public MainWindow()
@@ -58,5 +59,10 @@ public partial class MainWindow : Window
         }
         
         MainWindowViewModel.Space_PointerModify(PointerModify.Release, control, e);
+    }
+
+    private void Space_OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
+    {
+        MainWindowViewModel.Space_OnPointerWheelChanged(sender, e);
     }
 }
