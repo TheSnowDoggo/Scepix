@@ -26,7 +26,6 @@ public class FlameEngine() : TagEngine("flame")
                 continue;
             }
 
-            var fueled = false;
             foreach (var axis in Vec2I.AllAxis)
             {
                 var next = pos + axis;
@@ -46,7 +45,6 @@ public class FlameEngine() : TagEngine("flame")
                 if (timer > 0)
                 {
                     p.LocalTags[TimerTag] = timer - (float)delta;
-                    fueled = true;
                     continue;
                 }
 
@@ -58,14 +56,41 @@ public class FlameEngine() : TagEngine("flame")
                 }
             }
 
-            if (fueled)
+            foreach (var axis in Vec2I.AllAxis)
             {
-                continue;
+                var next = pos + axis;
+
+                if (!space.TryGet(next, out var p) || p != null)
+                {
+                    continue;
+                }
+
+                if (Math.Abs(axis.X) != 0)
+                {
+                    var next2 = next + new Vec2I(axis.X, 0);
+
+                    if (space.TryGet(next2, out p) && p != null &&
+                        p.Variant.DataTags.TryGetValue(FlammableTag, out float duration) && duration > 0)
+                    {
+                        space[next] = space.Make("fire");
+                        continue;
+                    }
+                }
+                if (Math.Abs(axis.Y) != 0)
+                {
+                    var next2 = next + new Vec2I(0, axis.Y);
+                        
+                    if (space.TryGet(next2, out p) && p != null &&
+                        p.Variant.DataTags.TryGetValue(FlammableTag, out float duration) && duration > 0)
+                    {
+                        space[next] = space.Make("fire");
+                    }
+                }
             }
             
             if (!data.LocalTags.TryGetValue(DeathTimerTag, out float deathTimer))
             {
-                deathTimer = data.Variant.DataTags.GetContentOrDefault(LifetimeTag, 3f);
+                deathTimer = MUtils.Lerp((float)_rand.NextDouble(), 0.5f, 2.0f);
                 data.LocalTags[DeathTimerTag] = deathTimer;
             }
 

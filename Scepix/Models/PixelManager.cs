@@ -126,7 +126,7 @@ public class PixelManager
                 EngineTags = ["liquid"],
                 DataTags = new TagMap()
                 {
-                    { "density", 3 },
+                    { "density", -1 },
                     { "flame.duration", 5.0f }
                 } 
             },
@@ -143,10 +143,10 @@ public class PixelManager
             new PixelVariant("fire")
             {
                 Color = SKColors.Orange,
-                EngineTags = ["powder", "flame"],
+                EngineTags = ["gas", "flame"],
                 DataTags = new TagMap()
                 {
-                    { "density", -1 }
+                    { "density", -2 }
                 }
             }
         ]
@@ -275,11 +275,6 @@ public class PixelManager
     
     public void Space_OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
     {
-        if (sender is not Control control)
-        {
-            return;
-        }
-
         _brushSize = Math.Clamp(_brushSize + (float)e.Delta.Y, 1.0f, 50.0f);
 
         Console.WriteLine($"Brush changed to {_brushSize}");

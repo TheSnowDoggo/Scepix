@@ -11,12 +11,9 @@ public class GasEngine() : TagEngine("gas")
     [
         Vec2I.Up,
         Vec2I.Right,
-        Vec2I.Down,
         Vec2I.Left,
         Vec2I.UpLeft,
         Vec2I.UpRight,
-        Vec2I.DownRight,
-        Vec2I.DownLeft,
     ];
 
     private readonly Random _rand = new();
@@ -29,12 +26,12 @@ public class GasEngine() : TagEngine("gas")
         
         foreach (Vec2I pos in positions)
         {
-            if (space[pos] is not {} data || _rand.Next(10) != 0)
+            if (space[pos] is not {} data)
             {
                 continue;
             }
 
-            var next = pos + Axis[_rand.Next(4)];
+            var next = pos + Axis[_rand.Next(Axis.Count)];
 
             if (!space.TryGet(next, out var p) || p != null)
             {

@@ -29,9 +29,9 @@ public class TagEngineManager : IEnumerable<TagEngine>
     {
         var dict = QueryTagInfo(grid);
         
-        foreach (var (tag, list) in dict)
+        foreach (var engine in _engines.Values)
         {
-            if (!_engines.TryGetValue(tag, out var engine))
+            if (!dict.TryGetValue(engine.Tag, out var list))
             {
                 continue;
             }
