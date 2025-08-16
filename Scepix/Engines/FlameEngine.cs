@@ -49,11 +49,6 @@ public class FlameEngine() : TagEngine("flame")
                 }
 
                 space[next] = null;
-                
-                if (_rand.NextBool())
-                {
-                    space[next] = space.Make("co2");
-                }
             }
 
             foreach (var axis in Vec2I.AllAxis)
@@ -90,7 +85,7 @@ public class FlameEngine() : TagEngine("flame")
             
             if (!data.LocalTags.TryGetValue(DeathTimerTag, out float deathTimer))
             {
-                deathTimer = MUtils.Lerp((float)_rand.NextDouble(), 0.5f, 2.0f);
+                deathTimer = MUtils.Lerp((float)_rand.NextDouble(), 0.5f, 1.0f);
                 data.LocalTags[DeathTimerTag] = deathTimer;
             }
 
@@ -101,6 +96,11 @@ public class FlameEngine() : TagEngine("flame")
             }
 
             space[pos] = null;
+            
+            if (_rand.Next(50) == 0)
+            {
+                space[pos] = space.Make("co2");
+            }
         }
     }
 }

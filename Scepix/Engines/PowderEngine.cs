@@ -40,9 +40,9 @@ public class PowderEngine() : TagEngine("powder")
     
     private const string DensityTag = "density";
 
-    public const string RoutingTag = "powder.routing";
+    private const string RoutingTag = "powder.routing";
 
-    public const string AntiTag = "powder.anti";
+    private const string AntiTag = "powder.anti";
 
     public override void Update(double delta, List<Coord> positions, PixelSpace space)
     {

@@ -18,7 +18,7 @@ public class PixelManager
 {
     private readonly Updater _updater = new();
 
-    private readonly PixelSpace _space = new(400, 200)
+    private readonly PixelSpace _space = new(300, 150)
     {
         Variants = 
         [
@@ -35,6 +35,14 @@ public class PixelManager
                       }
                   },
               },
+            },
+            new PixelVariant("wood")
+            {
+                Color = SKColors.Brown,
+                DataTags = new TagMap()
+                {
+                    { "flame.duration", 8.0f }
+                } 
             },
             new PixelVariant("rust")
             {
@@ -91,7 +99,7 @@ public class PixelManager
             new PixelVariant("salt")
             {
                 Color = SKColors.GhostWhite,
-                EngineTags = ["powder", "recipe"],
+                EngineTags = ["recipe", "powder"],
                 DataTags = new TagMap()
                 {
                     { "recipe.recipes", new Dictionary<string, RecipeEngine.Recipe>
@@ -126,46 +134,55 @@ public class PixelManager
                 EngineTags = ["liquid"],
                 DataTags = new TagMap()
                 {
-                    { "density", -1 },
+                    { "density", -2 },
                     { "flame.duration", 5.0f }
                 } 
             },
             new PixelVariant("co2")
             {
                 Color = SKColors.LightGray,
-                EngineTags = ["liquid", "gas"],
+                EngineTags = ["gas"],
                 DataTags = new TagMap()
                 {
                     "liquid.anti",
-                    { "density", -3 }
+                    { "density", -4 }
                 }
             },
             new PixelVariant("fire")
             {
                 Color = SKColors.Orange,
-                EngineTags = ["gas", "flame"],
+                EngineTags = ["flame", "gas"],
                 DataTags = new TagMap()
                 {
-                    { "density", -2 }
+                    { "density", -5 }
                 }
-            }
+            },
+            new PixelVariant("extinguisher")
+            {
+                Color = SKColors.Aqua,
+                EngineTags = ["powder"],
+                DataTags = new TagMap()
+                {
+                    { "density", -3 }
+                }
+            },
         ]
     };
     
     private readonly TagEngineManager _tagEngineManager =
     [
+        new RecipeEngine(),
         new FlameEngine(),
         new PowderEngine(),
         new LiquidEngine(),
         new GasEngine(),
-        new RecipeEngine(),
     ];
 
     private bool _filling = false;
 
-    private string? _fill = null;
+    private readonly Queue<Vec2I> _fillQueue = new();
 
-    private Vec2I _mousePos = Vec2I.Zero;
+    private string? _fill = null;
 
     private double _statsTimer;
 
@@ -218,15 +235,29 @@ public class PixelManager
 
         if (_filling && _fill != null)
         {
-            foreach (var pos in EnumerateCircle((int)MathF.Round(_brushSize)).Select(off => _mousePos + off).Where(pos => _space.InRange(pos)))
+            var circle = EnumerateCircle((int)MathF.Round(_brushSize));
+
+            while (_fillQueue.Count > 0)
             {
-                if (_fill == string.Empty)
+                var fillPos = _fillQueue.Count > 1 ? _fillQueue.Dequeue() :
+                    _fillQueue.Peek();
+                
+                foreach (var pos in circle.Select(off => fillPos + off)
+                    .Where(pos => _space.InRange(pos)))
                 {
-                    _space[pos] = null;
+                    if (_fill == string.Empty)
+                    {
+                        _space[pos] = null;
+                    }
+                    else if (_space[pos] == null)
+                    {
+                        _space[pos] = _space.Make(_fill);
+                    }
                 }
-                else if (_space[pos] == null)
+
+                if (_fillQueue.Count == 1)
                 {
-                    _space[pos] = _space.Make(_fill);
+                    break;
                 }
             }
         }
@@ -244,33 +275,39 @@ public class PixelManager
         {
             case MainWindow.PointerModify.Release:
                 _filling = false;
+                _fillQueue.Clear();
                 return;
             case MainWindow.PointerModify.Place:
                 _filling = true;
+                _fillQueue.Enqueue(TranslatePosition(sender, e));
                 _fill = SelectedVariant;
                 break;
             case MainWindow.PointerModify.Remove:
                 _filling = true;
+                _fillQueue.Enqueue(TranslatePosition(sender, e));
                 _fill = string.Empty;
                 break;
             case MainWindow.PointerModify.Move:
-                if (!_filling)
+                if (_filling)
                 {
-                    return;
+                    _fillQueue.Enqueue(TranslatePosition(sender, e));
                 }
                 break;
             default:
                 throw new ArgumentException("Unknown modify type");
         }
 
-        var point = e.GetCurrentPoint(sender);
         
-        var rawPos = point.Position;
+    }
+
+    private Vec2I TranslatePosition(Control sender, PointerEventArgs e)
+    {
+        var rawPos = e.GetCurrentPoint(sender).Position;
         
         var x = (int)Math.Round(rawPos.X / sender.Bounds.Size.Width * _space.Width);
         var y = (int)Math.Round(rawPos.Y / sender.Bounds.Size.Height * _space.Height);
         
-        _mousePos = new Vec2I(x, y);
+        return new Vec2I(x, y);
     }
     
     public void Space_OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)

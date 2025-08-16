@@ -42,11 +42,6 @@ public partial class PixelViewModel : ViewModelBase
         }
     }
     
-    [RelayCommand]
-    private void OnSelect()
-    {
-    }
-
     private void Manager_OnRender(object? sender, PixelManager.RenderEventArgs e)
     {
         var resized = false;
