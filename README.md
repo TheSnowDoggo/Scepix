@@ -1,4 +1,4 @@
-Scepix is a pixel-based physics sandbox game heavily inspired from other games like The Powder Toy and Sandboxels.
+Scepix is a multi-platform pixel-based physics sandbox game heavily inspired from other games like The Powder Toy and Sandboxels.
 
 This is my first real attempt at creating an application using the Avalonia UI framework as well as the MVVM model so the code is kinda shitty.
 
