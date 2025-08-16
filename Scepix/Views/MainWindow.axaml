@@ -15,7 +15,8 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <Grid RowDefinitions="*, Auto" ColumnDefinitions="*">
+    <Grid RowDefinitions="*, Auto"
+          ColumnDefinitions="*">
         <Image Grid.Row="0" 
                Source="{Binding PixelViewModel.Bitmap}"
                RenderOptions.BitmapInterpolationMode="None"

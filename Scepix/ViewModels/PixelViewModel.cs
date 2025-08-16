@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Scepix.Models;
 using SkiaSharp;
@@ -96,5 +97,10 @@ public partial class PixelViewModel : ViewModelBase
     public void Space_OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
     {
         _manager.Space_OnPointerWheelChanged(sender, e);
+    }
+    
+    public void OnExit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
+    {
+        _manager.Stop();
     }
 }

@@ -221,6 +221,11 @@ public class PixelManager
         _updater.Start();
     }
 
+    public void Stop()
+    {
+        _updater.Stop();
+    }
+
     private void Update(double delta)
     {
         if (_statsTimer > 0)
