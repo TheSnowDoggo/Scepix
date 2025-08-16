@@ -16,7 +16,7 @@ public class TagEngineManager : IEnumerable<TagEngine>
 
     private int _lazyFrameCounter = 1;
 
-    public int LazyFrameUpdateRate { get; set; } = 1;
+    public int LazyFrameWait { get; set; } = 1;
 
     public byte InitialAwakeTime { get; set; } = 60;
 
@@ -44,7 +44,7 @@ public class TagEngineManager : IEnumerable<TagEngine>
     {
         var dict = new Dictionary<string, List<Coord>>();
 
-        if (LazyFrameUpdateRate > 1 && _lazyFrameCounter >= LazyFrameUpdateRate)
+        if (LazyFrameWait > 1 && _lazyFrameCounter >= LazyFrameWait)
         {
             _lazyFrameCounter = 0;
         }
@@ -56,7 +56,7 @@ public class TagEngineManager : IEnumerable<TagEngine>
                 continue;
             }
 
-            if (LazyFrameUpdateRate > 1)
+            if (LazyFrameWait > 1)
             {
                 switch (data.LazyCounter)
                 {
@@ -71,7 +71,7 @@ public class TagEngineManager : IEnumerable<TagEngine>
                     }
                     case 0:
                         data.LazyCounter = InitialAwakeTime > 0 ? InitialAwakeTime : (byte)1;
-                        data.LazyRank = (byte)_rand.Next(LazyFrameUpdateRate);
+                        data.LazyRank = (byte)_rand.Next(LazyFrameWait);
                         break;
                     default:
                         --data.LazyCounter;
@@ -97,7 +97,7 @@ public class TagEngineManager : IEnumerable<TagEngine>
             }
         }
 
-        if (LazyFrameUpdateRate > 1)
+        if (LazyFrameWait > 1)
         {
             ++_lazyFrameCounter;
         }

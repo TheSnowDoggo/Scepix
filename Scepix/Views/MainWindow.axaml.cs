@@ -14,7 +14,6 @@ public partial class MainWindow : Window
         Remove,
         Move,
         Release,
-        Scroll,
     }
     
     public MainWindow()

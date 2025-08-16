@@ -208,14 +208,13 @@ public class PixelManager
 
     private void Start()
     {
-        //_space.Fill(p => _space.Make("sand"), 0, 60, 100, 30);
-        
-        //_space.Fill(p => _space.Make("water"), 30, 0, 80, 40);
-
-        _tagEngineManager.LazyFrameUpdateRate = 5;
+        // Represents the number of frames between each lazy update.
+        // Higher > More performance, worse simulation (less lazy frames)
+        _tagEngineManager.LazyFrameWait = 5;
         
         _updater.OnUpdate += Update;
 
+        // Maximum FPS, not recommended to uncap as simulation is tied to frame-rate.
         _updater.FrameCap = 60;
        
         _updater.Start();
@@ -301,8 +300,6 @@ public class PixelManager
             default:
                 throw new ArgumentException("Unknown modify type");
         }
-
-        
     }
 
     private Vec2I TranslatePosition(Control sender, PointerEventArgs e)
@@ -322,6 +319,7 @@ public class PixelManager
         Console.WriteLine($"Brush changed to {_brushSize}");
     }
     
+    // Bad
     private static HashSet<Vec2I> EnumerateCircle(double radius)
     {
         var set = new HashSet<Vec2I>();
